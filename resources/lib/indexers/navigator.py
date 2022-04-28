@@ -64,13 +64,13 @@ class navigator:
 
         self.addDirectoryItem(32013, 'persons', 'people.png', 'DefaultMovies.png')
 
-        self.addDirectoryItem(32008, 'toolNavigator', 'tools.png', 'DefaultAddonProgram.png')
-
         downloads = True if control.setting('downloads') == 'true' and (len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
         if downloads == True:
             self.addDirectoryItem(32009, 'downloadNavigator', 'downloads.png', 'DefaultFolder.png')
 
         self.addDirectoryItem(32010, 'searchNavigator', 'search.png', 'DefaultAddonsSearch.png')
+
+        self.addDirectoryItem(32008, 'toolNavigator', 'tools.png', 'DefaultAddonProgram.png')
 
         self.endDirectory()
 
@@ -387,9 +387,9 @@ class navigator:
         c = k.getText() if k.isConfirmed() else ''
         if c == api_keys.pin:
             if not hasScraper:
-                self.addDirectoryItem('Install external scraper package', 'installScrapers', 'iconT.png', 'DefaultAddonProgram.png', isFolder=False)
+                self.addDirectoryItem('Install external scraper package', 'installAddon&addon_id=script.module.blackscrapers', 'iconT.png', 'DefaultAddonProgram.png', isFolder=False)
             if not hasResolver:
-                self.addDirectoryItem('Install external resolvers package', 'installSmu', 'iconT.png', 'DefaultAddonProgram.png', isFolder=False)
+                self.addDirectoryItem('Install external resolvers package', 'installAddon&addon_id=script.module.resolveurl', 'iconT.png', 'DefaultAddonProgram.png', isFolder=False)
             self.endDirectory()
         else:
             return

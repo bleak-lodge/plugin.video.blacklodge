@@ -101,7 +101,7 @@ class source:
                 jw0 = JustWatch(country='US')
                 r = jw0.search_for_item(query=title.lower(), content_types=['show'], release_year_from=int(year)-1, release_year_until=int(year)+1)
                 items = r['items']
-                log_utils.log('jw items: ' + repr(items))
+                #log_utils.log('jw items: ' + repr(items))
                 jw_id = [i['id'] for i in items if source_utils.is_match(' '.join((i['title'], str(i['original_release_year']))), title, year, self.aliases)]
 
                 if jw_id:

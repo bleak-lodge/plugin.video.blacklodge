@@ -1,2 +1,5 @@
+[B][COLOR gold]v1.00.01[/COLOR][/B]
+- Minor changes/cleanup
+
 [B][COLOR gold]v1.00.00[/COLOR][/B]
 - Initial release

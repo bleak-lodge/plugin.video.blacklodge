@@ -52,6 +52,8 @@ def routing(_argv):
 
     rtype = params.get('rtype')
 
+    addon_id = params.get('addon_id')
+
     windowedtrailer = params.get('windowedtrailer')
     windowedtrailer = int(windowedtrailer) if windowedtrailer in ('0', '1') else 0
 
@@ -362,6 +364,12 @@ def routing(_argv):
         from resources.lib.modules import playcount
         playcount.tvshows(name, imdb, tmdb, season, query)
 
+    elif action == 'installAddon':
+        from resources.lib.modules import control
+        control.installAddon(addon_id)
+        # control.sleep(200)
+        # control.refresh()
+
     elif action == 'yt_trailer':
         from resources.lib.modules import control, trailer
         if not control.condVisibility('System.HasAddon(plugin.video.youtube)'):
@@ -386,37 +394,15 @@ def routing(_argv):
         from resources.lib.modules import trakt
         trakt.authTrakt()
 
-    elif action == 'installSmu':
-        from resources.lib.modules import control
-        control.installAddon('script.module.resolveurl')
-        control.sleep(200)
-        control.refresh()
-
     elif action == 'smuSettings':
         try:
             import resolveurl
             resolveurl.display_settings()
         except: pass
 
-    elif action == 'installScrapers':
-        from resources.lib.modules import control
-        control.installAddon('script.module.blackscrapers')
-        control.sleep(200)
-        control.refresh()
-
     elif action == 'blackscrapersettings':
         from resources.lib.modules import control
         control.openSettings('0.0', 'script.module.blackscrapers')
-
-    elif action == 'installOrion':
-        from resources.lib.modules import control
-        control.installAddon('script.module.orion')
-        control.sleep(200)
-        control.refresh()
-
-    elif action == 'orionsettings':
-        from resources.lib.modules import control
-        control.openSettings('0.0', 'script.module.orion')
 
     elif action == 'download':
         import simplejson as json

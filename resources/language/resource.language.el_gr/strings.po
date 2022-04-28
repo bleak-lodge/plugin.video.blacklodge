@@ -259,10 +259,6 @@ msgctxt "#32057"
 msgid "Process Complete"
 msgstr "Ολοκλήρωση εργασίας"
 
-msgctxt "#32058"
-msgid "This will slow down things until they are re-cached!"
-msgstr "Θα υπάρξει επιβράδυνση μέχρι την εκ νέου αποθηκεύση!"
-
 msgctxt "#32059"
 msgid "CLICK HERE TO SAVE VIEW"
 msgstr "ΠΑΤΗΣΤΕ ΕΔΩ ΓΙΑ ΝΑ ΑΠΟΘΗΚΕΥΤΕΙ Η ΠΡΟΒΟΛΗ"
@@ -339,10 +335,6 @@ msgctxt "#32077"
 msgid "Trending"
 msgstr "Τάσεις"
 
-msgctxt "#32078"
-msgid "[B]LambdaScrapers[/B] : Settings"
-msgstr "[B]LambdaScrapers[/B] : Ρυθμίσεις"
-
 msgctxt "#32079"
 msgid "[B]External Scrapers[/B] : Settings"
 msgstr "[B]External Scrapers[/B] : Ρυθμίσεις"
@@ -355,29 +347,9 @@ msgctxt "#32081"
 msgid "[I]Clear Providers[/I]"
 msgstr "[I]Καθαρισμός Παρόχων[/I]"
 
-msgctxt "#32082"
-msgid "[B]OpenScrapers[/B] : Settings"
-msgstr "[B]OpenScrapers[/B] : Ρυθμίσεις"
-
-msgctxt "#32083"
-msgid "Choose Provider Source(s)"
-msgstr "Επιλογή Πακέτου Παρόχων"
-
-msgctxt "#32084"
-msgid "Provider Source:"
-msgstr "Πακέτο παρόχων:"
-
 msgctxt "#32085"
 msgid "External Scrapers Settings"
 msgstr "Ρυθμίσεις εξωτερικών παρόχων"
-
-msgctxt "#32086"
-msgid "Open Openscrapers Settings"
-msgstr "Ρυθμίσεις Openscrapers"
-
-msgctxt "#32087"
-msgid "Clear Providers Cache (recommended after provider source change)"
-msgstr "Καθαρισμός μνήμης παρόχων (συνιστάται μετά από αλλαγή πακέτου)"
 
 msgctxt "#32088"
 msgid "Built-in Providers"

@@ -922,7 +922,7 @@ class sources:
         if size_filters == 'true':
             self.sources = [i for i in self.sources if min_size_gb <= i['gb_per_hour'] <= max_size_gb]
 
-        if debrid_only == 'true' and debrid.status():
+        if debrid_only == 'true':
             self.sources = [i for i in self.sources if (i['source'].lower() in self.hostprDict or 'torrent' in i['source'].lower()) or
                             i['provider'] in ['furk', 'easynews'] or i.get('official') or i.get('local')]
 

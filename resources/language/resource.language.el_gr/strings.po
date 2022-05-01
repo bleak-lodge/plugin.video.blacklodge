@@ -1285,8 +1285,8 @@ msgid "Autoplay SD Quality only"
 msgstr "Μόνο SD πηγές στο Autoplay"
 
 msgctxt "#32621"
-msgid "Debrid Sources Only"
-msgstr "Μόνο Debrid πηγές"
+msgid "Premium Sources Only"
+msgstr "Μόνο Premium πηγές"
 
 msgctxt "#32623"
 msgid "Auto Resume"

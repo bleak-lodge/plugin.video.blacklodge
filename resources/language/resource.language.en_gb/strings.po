@@ -1316,7 +1316,7 @@ msgid "Autoplay SD Quality only"
 msgstr ""
 
 msgctxt "#32621"
-msgid "Debrid Sources Only"
+msgid "Premium Sources Only"
 msgstr ""
 
 msgctxt "#32622"

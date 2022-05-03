@@ -175,16 +175,18 @@ def authTrakt():
         result = utils.json_loads_as_str(result)
 
         user = result['username']
-        authed = '' if user == '' else str('yes')
+        authed = '' if user == '' else 'yes'
 
-        print('info - ' + token)
+        #print('info - ' + token)
         control.setSetting(id='trakt.user', value=user)
         control.setSetting(id='trakt.authed', value=authed)
+        control.setSetting(id='trakt.authed2', value=authed)
+        control.setSetting(id='trakt.authed3', value=authed)
         control.setSetting(id='trakt.token', value=token)
         control.setSetting(id='trakt.refresh', value=refresh)
         raise Exception()
     except:
-        control.openSettings('5.0')
+        control.openSettings('4.6')
 
 
 def getTraktCredentialsInfo():

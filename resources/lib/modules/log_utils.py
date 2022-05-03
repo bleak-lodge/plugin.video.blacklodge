@@ -94,7 +94,7 @@ def upload_log():
     if not data:
         msg = control.lang(32140)
         ok = control.dialog.ok(name, msg)
-        if ok: control.openSettings('9.0')
+        if ok: control.openSettings('8.0')
 
     else:
         import requests

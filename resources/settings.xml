@@ -9,7 +9,6 @@
         <setting id="indicators.alt" type="enum" label="32313" lvalues="32314|32315" default="1" visible="!eq(-1,)" />
         <setting id="indicators" type="enum" label="32313" lvalues="32314" default="0" visible="eq(-2,)" />
         <setting id="api.language" type="select" label="32316" values="AUTO|Bulgarian|Chinese|Croatian|Czech|Danish|Dutch|English|Finnish|French|German|Greek|Hebrew|Hungarian|Italian|Japanese|Korean|Norwegian|Polish|Portuguese|Romanian|Russian|Serbian|Slovak|Slovenian|Spanish|Swedish|Thai|Turkish|Ukrainian" default="AUTO" />
-        <setting id="providers.lang" type="select" label="32360" values="English|Greek|Greek+English" default="English" />
         <setting id="fanart" type="bool" label="32318" default="true" />
         <setting id="hq.artwork" type="bool" label="32129" default="false" />
         <setting id="hq.art.text" type="text" label="32130" enable="false" visible="eq(-1,true)" />
@@ -26,9 +25,9 @@
         <!--<setting id="flatten.tvshows" type="bool" label="32317" default="false" />-->
         <setting id="showunaired" type="bool" label="32570" default="true" />
         <setting id="tv.specials" type="bool" label="32613" default="true" />
-        <setting id="tv.widget.alt" type="enum" label="32325" lvalues="32302|32326|32327|32328" default="2" visible="!eq(-19,)" />
-        <setting id="tv.widget" type="enum" label="32325" lvalues="32302|32326" default="1" visible="eq(-20,)" />
-        <setting id="prgr.sortorder" type="enum" label="32584" lvalues="32585|32586" default="1" visible="!eq(-21,)" />
+        <setting id="tv.widget.alt" type="enum" label="32325" lvalues="32302|32326|32327|32328" default="2" visible="!eq(-18,)" />
+        <setting id="tv.widget" type="enum" label="32325" lvalues="32302|32326" default="1" visible="eq(-19,)" />
+        <setting id="prgr.sortorder" type="enum" label="32584" lvalues="32585|32586" default="1" visible="!eq(-20,)" />
         <setting id="write.settings" type="text" label="write settings" default="" visible="false" enable="false" />
     </category>
 
@@ -55,14 +54,17 @@
     </category>
 
     <category label="32338">
+        <setting id="hosts.mode" type="enum" label="32331" lvalues="32332|32333|32334" default="1" />
+        <setting id="progress.dialog" type="enum" label="32335" lvalues="32336|32337" default="0" />
         <setting type="lsep" label="Appearance" />
-        <setting id="source.list.meta" type="bool" label="32112" default="false" />
         <setting id="linesplit" type="enum" label="32628" lvalues="32629|32630|32631" default="1" />
         <setting id="official.identify" type="select" label="32632" lvalues="32201|32202|32203|32204|32205|32206|32207|32208|32209|32210|32211|32212|32213|32214|32215|32216|32217|32218|32219|32220|32221" default="15" enable="!eq(-1,2)"/>
         <setting id="prem.identify" type="select" label="32588" lvalues="32201|32202|32203|32204|32205|32206|32207|32208|32209|32210|32211|32212|32213|32214|32215|32216|32217|32218|32219|32220|32221" default="20" enable="!eq(-2,2)" visible="System.HasAddon(script.module.blackscrapers)"/>
         <setting id="sec.identify" type="select" label="32626" lvalues="32201|32202|32203|32204|32205|32206|32207|32208|32209|32210|32211|32212|32213|32214|32215|32216|32217|32218|32219|32220|32221|32200" default="17" enable="!eq(-3,2)" visible="System.HasAddon(script.module.blackscrapers)"/>
         <setting id="sources.name" type="enum" label="32587" lvalues="32131|32132" default="0" enable="!eq(-4,2)" visible="System.HasAddon(script.module.blackscrapers)" />
+        <setting id="source.list.meta" type="bool" label="32112" default="false" enable="eq(-8,1)" />
         <setting type="lsep" label="32638" />
+        <setting id="providers.lang" type="select" label="32360" values="English|Greek|Greek+English" default="English" />
         <setting id="scrapers.timeout.1" type="slider" label="32312" default="40" range="10,60" option="int" />
         <setting id="preemptive.termination" type="bool" label="32618" default="false" />
         <setting id="preemptive.limit" type="slider" label="32619" default="10" range="1,50" option="int" subsetting="true" enable="eq(-1,true)" />
@@ -88,12 +90,15 @@
     </category>
 
     <category label="32330">
-        <setting id="hosts.mode" type="enum" label="32331" lvalues="32332|32333|32334" default="1" />
-        <setting id="progress.dialog" type="enum" label="32335" lvalues="32336|32337" default="0" />
+        <setting id="trakt.authed2" type="text" default="" visible="false" enable="false" />
         <setting type="lsep" label="32343" />
         <setting id="bookmarks" type="bool" label="32344" default="true" />
-        <setting id="bookmarks.auto" type="bool" label="32623" default="false" enable="eq(-1,true)" subsetting="true" />
+        <setting id="bookmarks.auto" type="bool" label="32623" default="false" visible="eq(-1,true)" subsetting="true" />
+        <setting id="rersume.source" type="enum" label="32095" lvalues="32314|32096" default="0" visible="!eq(-4,)+eq(-2,true)" subsetting="true" />
         <setting type="lsep" label="32372" />
+        <setting id="trakt.scrobble" type="bool" label="32097" default="false" visible="!eq(-6,)"/>
+        <setting id="scrobble.text" type="text" label="32098" enable="false" visible="!eq(-7,)+eq(-1,true)" subsetting="true" />
+        <setting id="trakt.scrobble.notify" type="bool" label="32099" default="false" visible="!eq(-8,)+eq(-2,true)" subsetting="true" />
         <setting id="crefresh" type="bool" label="32373" default="false" />
     </category>
 
@@ -103,27 +108,16 @@
         <setting id="tm.user" type="text" option="hidden" label="TMDb API key" default="" />
         <setting type="lsep" label="32627" />
         <setting id="imdb.user" type="text" label="32303" default="" />
-        <setting type="lsep" label="Opensubtitles.org" />
-        <setting id="os.user" type="text" label="32117" default="" />
-        <setting id="os.pass" type="text" option="hidden" label="32307" default="" />
-    </category>
-
-    <category label="32315">
+        <setting type="lsep" label="32315" />
         <setting id="trakt.user" type="action" label="32306" option="close" action="RunPlugin(plugin://plugin.video.blacklodge/?action=authTrakt)" />
         <setting id="trakt.token" type="text" visible="false" label="" default="" />
         <setting id="trakt.refresh" type="text" visible="false" label="" default="" />
         <setting type="lsep" label="32075" />
         <setting id="trakt.client_id" type="text" label="32609" default="" />
         <setting id="trakt.client_secret" type="text" label="32610" default="" />
-        <setting type="sep" />
-        <setting id="trakt.scrobble" type="bool" label="32097" default="false" enable="!eq(-6,)"/>
-        <setting id="scrobble.text" type="text" label="32098" enable="false" />
-        <setting id="trakt.scrobble.notify" type="bool" label="32099" default="false" enable="!eq(-8,)+eq(-2,true)"/>
-        <setting id="rersume.source" type="enum" label="32095" lvalues="32314|32096" default="0" enable="!eq(-9,)" />
-        <setting type="lsep" label="32614" />
-        <setting id="autoTraktOnStart" type="bool" label="32615" default="false" enable="!eq(-11,)"/>
-        <setting id="schedTraktTime" type="slider" label="32616" default="0" range="0,12,24" option="int" enable="!eq(-12,)" />
-        <setting id="sched.text" type="text" label="32617" enable="false" />
+        <setting type="lsep" label="Opensubtitles.org" />
+        <setting id="os.user" type="text" label="32117" default="" />
+        <setting id="os.pass" type="text" option="hidden" label="32307" default="" />
     </category>
 
     <category label="32541">
@@ -132,13 +126,16 @@
         <setting type="lsep" label="32542" />
         <setting id="library.service.update" type="bool" label="32545" default="true" />
         <setting id="library.service.notification" type="bool" label="32546" default="true" />
-        <setting type="sep" />
         <setting id="library.update" type="bool" label="32547" default="true" />
         <setting id="library.check" type="bool" label="32548" default="true" />
-        <setting type="sep" />
         <setting id="library.importdelay" type="bool" label="32612" default="false" />
         <setting id="library.include_unknown" type="bool" label="32565" default="true" />
         <setting id="library.include_special" type="bool" label="32566" default="true" />
+        <setting type="lsep" label="32614" />
+        <setting id="trakt.authed3" type="text" default="" visible="false" enable="false" />
+        <setting id="autoTraktOnStart" type="bool" label="32615" default="false" visible="!eq(-1,)"/>
+        <setting id="schedTraktTime" type="slider" label="32616" default="0" range="0,12,24" option="int" visible="!eq(-2,)" />
+        <setting id="sched.text" type="text" label="32617" enable="false" visible="!eq(-3,)" />
     </category>
 
     <category label="32353">

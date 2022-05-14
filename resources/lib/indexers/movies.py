@@ -33,7 +33,6 @@ from resources.lib.modules import views
 from resources.lib.modules import utils
 from resources.lib.modules import api_keys
 from resources.lib.modules import log_utils
-from resources.lib.modules.justwatch import providers
 from resources.lib.indexers import navigator
 
 import os,sys,re,datetime
@@ -49,8 +48,8 @@ import requests
 
 
 params = dict(urllib_parse.parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
-
 action = params.get('action')
+
 
 class movies:
     def __init__(self):
@@ -89,7 +88,15 @@ class movies:
         self.tm_search_link = 'https://api.themoviedb.org/3/search/movie?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
         self.related_link = 'https://api.themoviedb.org/3/movie/%s/similar?api_key=%s&page=1' % ('%s', self.tm_user)
-        self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+
+        self.tmdb_providers_pop_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_providers_voted_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&sort_by=vote_count.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_providers_rated_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&sort_by=vote_average.desc&vote_count.gte=500&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_year_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&primary_release_year=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
+        self.tmdb_decade_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&primary_release_date.gte=%s&primary_release_date.lte=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', '%s', self.country)
+        self.tmdb_language_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&with_original_language=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
+        self.tmdb_certification_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&certification_country=US&certification=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
+        self.tmdb_genre_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&with_genres=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
 
         self.keyword_link = 'https://www.imdb.com/search/title?title_type=movie,short,tvMovie&release_date=,date[0]&keywords=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
         self.customlist_link = 'https://www.imdb.com/list/%s/?view=detail&sort=list_order,asc&title_type=movie,tvMovie&start=1'
@@ -300,44 +307,6 @@ class movies:
         return self.list
 
 
-    def genres(self):
-        genres = [
-            ('Action', 'action', True),
-            ('Adventure', 'adventure', True),
-            ('Animation', 'animation', True),
-            ('Anime', 'anime', False),
-            ('Biography', 'biography', True),
-            ('Comedy', 'comedy', True),
-            ('Crime', 'crime', True),
-            ('Documentary', 'documentary', True),
-            ('Drama', 'drama', True),
-            ('Family', 'family', True),
-            ('Fantasy', 'fantasy', True),
-            ('History', 'history', True),
-            ('Horror', 'horror', True),
-            ('Music ', 'music', True),
-            ('Musical', 'musical', True),
-            ('Mystery', 'mystery', True),
-            ('Romance', 'romance', True),
-            ('Science Fiction', 'sci_fi', True),
-            ('Sport', 'sport', True),
-            ('Superhero', 'superhero', False),
-            ('Thriller', 'thriller', True),
-            ('War', 'war', True),
-            ('Western', 'western', True)
-        ]
-
-        for i in genres: self.list.append(
-            {
-                'name': cleangenre.lang(i[0], self.lang),
-                'url': self.genre_link % i[1] if i[2] else self.keyword_link % i[1],
-                'image': '{}{}{}'.format('genres/', i[1], '.png'),
-                'action': 'movies'
-            })
-        self.addDirectory(self.list)
-        return self.list
-
-
     def keywords(self): # Poseidon lists/icons (by Soulless)
         keywords = [
             ('anime', 'anime.jpg'),
@@ -510,7 +479,79 @@ class movies:
         return self.list
 
 
-    def languages(self):
+    def genres(self):
+        genres = [
+            ('Action', 'action', True),
+            ('Adventure', 'adventure', True),
+            ('Animation', 'animation', True),
+            ('Anime', 'anime', False),
+            ('Biography', 'biography', True),
+            ('Comedy', 'comedy', True),
+            ('Crime', 'crime', True),
+            ('Documentary', 'documentary', True),
+            ('Drama', 'drama', True),
+            ('Family', 'family', True),
+            ('Fantasy', 'fantasy', True),
+            ('History', 'history', True),
+            ('Horror', 'horror', True),
+            ('Music ', 'music', True),
+            ('Musical', 'musical', True),
+            ('Mystery', 'mystery', True),
+            ('Romance', 'romance', True),
+            ('Science Fiction', 'sci_fi', True),
+            ('Sport', 'sport', True),
+            ('Superhero', 'superhero', False),
+            ('Thriller', 'thriller', True),
+            ('War', 'war', True),
+            ('Western', 'western', True)
+        ]
+
+        for i in genres: self.list.append(
+            {
+                'name': cleangenre.lang(i[0], self.lang),
+                'url': self.genre_link % i[1] if i[2] else self.keyword_link % i[1],
+                'image': '{}{}{}'.format('genres/', i[1], '.png'),
+                'action': 'movies'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def tmdb_genres(self, code):
+        genres = [
+            ('Action', '28'),
+            ('Adventure', '12'),
+            ('Animation', '16'),
+            ('Comedy', '35'),
+            ('Crime', '80'),
+            ('Documentary', '99'),
+            ('Drama', '18'),
+            ('Family', '10751'),
+            ('Fantasy', '14'),
+            ('History', '36'),
+            ('Horror', '27'),
+            ('Music', '10402'),
+            ('Mystery', '9648'),
+            ('Romance', '10749'),
+            ('Science Fiction', '878'),
+            ('TV Movie', '10770'),
+            ('Thriller', '53'),
+            ('War', '10752'),
+            ('Western', '37')
+        ]
+
+        for i in genres: self.list.append(
+            {
+                'name': i[0],
+                'url': self.tmdb_genre_link % (i[1], code),
+                'image': 'genres.png',
+                'action': 'movies'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def languages(self, code=None):
         languages = [
             ('Arabic', 'ar'),
             ('Bosnian', 'bs'),
@@ -549,7 +590,7 @@ class movies:
         for i in languages: self.list.append(
             {
                 'name': i[0],
-                'url': self.language_link % i[1],
+                'url': self.language_link % i[1] if not code else self.tmdb_language_link % (i[1], code),
                 'image': 'languages.png',
                 'action': 'movies'
             })
@@ -557,13 +598,13 @@ class movies:
         return self.list
 
 
-    def certifications(self):
+    def certifications(self, code):
         certificates = ['G', 'PG', 'PG-13', 'R', 'NC-17']
 
         for i in certificates: self.list.append(
             {
                 'name': i,
-                'url': self.certification_link % i,
+                'url': self.certification_link % i if not code else self.tmdb_certification_link % (i, code),
                 'image': '{}{}{}'.format('mpaa/', i, '.png'),
                 'action': 'movies'
             })
@@ -571,60 +612,67 @@ class movies:
         return self.list
 
 
-    def services(self):
-        services = [
-            ('Amazon Prime', '9|119|613', 'https://i.imgur.com/ru9DDlL.png', providers.PRIME_ENABLED),
-            ('BBC Iplayer', '38', 'https://i.imgur.com/X5je23Q.png', providers.IPLAYER_ENABLED),
-            ('Crackle', '12', 'https://i.imgur.com/HqfbTPh.png', providers.CRACKLE_ENABLED),
-            ('Curiosity Stream', '190', 'https://i.imgur.com/k1iD7WI.png', providers.CURSTREAM_ENABLED),
-            ('Disney+', '337', 'https://i.imgur.com/DVrPgbM.png', providers.DISNEY_ENABLED),
-            ('HBO Max', '616|384|27', 'https://i.imgur.com/mmRMG75.png', providers.HBO_ENABLED),
-            ('Hulu', '15', 'https://i.imgur.com/cLVo7NH.png', providers.HULU_ENABLED),
-            ('Netflix', '8|175', 'https://i.imgur.com/02VN1wq.png', providers.NETFLIX_ENABLED),
-            ('Paramount+', '531', 'https://i.imgur.com/RpfpI9w.png', providers.PARAMOUNT_ENABLED),
-            ('Tubi TV', '73', 'https://i.imgur.com/M1rYcGI.png', providers.TUBI_ENABLED)
-        ]
-
-        services = [s for s in services if s[3]]
-        if services:
-
-            if len(services) > 1:
-                self.list.append(
-                    {
-                        'name': 'Popular on My Services (mixed)',
-                        'url': self.tmdb_providers_link % '|'.join([i[1] for i in services]),
-                        'image': 'featured.png',
-                        'plot': '[I]Provided by JustWatch[/I]',
-                        'action': 'movies'
-                        })
-
-            for i in services:
-                self.list.append(
-                    {
-                        'name': i[0],
-                        'url': self.tmdb_providers_link % i[1],
-                        'image': i[2],
-                        'plot': '[I]Provided by JustWatch[/I]',
-                        'action': 'movies'
-                    })
-
-            self.addDirectory(self.list)
-        return self.list
-
-
-    def years(self):
+    def years(self, code):
         year = (self.datetime.strftime('%Y'))
-
-        for i in range(int(year)-0, 1900, -1): self.list.append({'name': str(i), 'url': self.year_link % (str(i), str(i)), 'image': 'years.png', 'action': 'movies'})
+        for i in range(int(year)-0, 1900, -1): self.list.append(
+            {
+                'name': str(i),
+                'url': self.year_link % (str(i), str(i)) if not code else self.tmdb_year_link % (str(i), code),
+                'image': 'years.png',
+                'action': 'movies'
+            })
         self.addDirectory(self.list)
         return self.list
 
 
-    def decades(self):
+    def decades(self, code):
         year = (self.datetime.strftime('%Y'))
-        dec = int(year[:3]) * 10
 
-        for i in range(dec, 1890, -10): self.list.append({'name': str(i) + 's', 'url': self.decade_link % (str(i), str(i+9)), 'image': 'years.png', 'action': 'movies'})
+        dec = int(year[:3]) * 10
+        for i in range(dec, 1890, -10): self.list.append(
+            {
+                'name': str(i) + 's',
+                'url': self.decade_link % (str(i), str(i+9)) if not code else self.tmdb_decade_link % (str(i) + '-01-01', str(i+9) + '-01-01', code),
+                'image': 'years.png',
+                'action': 'movies'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
+    def services(self, code):
+        _code = urllib_parse.quote(code)
+
+        navigator.navigator().addDirectoryItem(32011, 'movieTmdbGenres&code=%s' % _code, 'genres.png', 'DefaultMovies.png')
+        navigator.navigator().addDirectoryItem(32015, 'movieCertificates&code=%s' % _code, 'certificates.png', 'DefaultMovies.png')
+        navigator.navigator().addDirectoryItem(32014, 'movieLanguages&code=%s' % _code, 'languages.png', 'DefaultMovies.png')
+        navigator.navigator().addDirectoryItem(32012, 'movieYears&code=%s' % _code, 'years.png', 'DefaultMovies.png')
+        navigator.navigator().addDirectoryItem(32123, 'movieDecades&code=%s' % _code, 'years.png', 'DefaultMovies.png')
+
+        self.list.append(
+            {
+                'name': control.lang(32018),
+                'url': self.tmdb_providers_pop_link % code,
+                'image': 'people-watching.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'movies'
+            })
+        self.list.append(
+            {
+                'name': control.lang(32023),
+                'url': self.tmdb_providers_rated_link % code,
+                'image': 'highly-rated.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'movies'
+            })
+        self.list.append(
+            {
+                'name': control.lang(32019),
+                'url': self.tmdb_providers_voted_link % code,
+                'image': 'most-voted.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'movies'
+            })
         self.addDirectory(self.list)
         return self.list
 

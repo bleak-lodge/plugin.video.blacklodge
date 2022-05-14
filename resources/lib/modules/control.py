@@ -421,8 +421,7 @@ def installAddon(addon_id):
         infoDialog('{0} is already installed'.format(addon_id), sound=True)
 
 
-def clean_settings(info=True):#Fen code
-    import xml.etree.ElementTree as ET
+def clean_settings(info=True):
     def _make_content(dict_object):
         if getKodiVersion() >= 18:
             content = '<settings version="2">'
@@ -431,7 +430,7 @@ def clean_settings(info=True):#Fen code
                     if 'default' in item and 'value' in item: content += '\n    <setting id="%s" default="%s">%s</setting>' % (item['id'], item['default'], item['value'])
                     elif 'default' in item: content += '\n    <setting id="%s" default="%s" />' % (item['id'], item['default'])
                     elif 'value' in item: content += '\n    <setting id="%s">%s</setting>' % (item['id'], item['value'])
-                    else: content += '\n    <setting id="%s"></setting>'
+                    else: content += '\n    <setting id="%s"></setting>' % item['id']
                 else: removed_settings.append(item)
         else:
             content = '<settings>'
@@ -442,6 +441,7 @@ def clean_settings(info=True):#Fen code
                 else: removed_settings.append(item)
         content += '\n</settings>'
         return content
+
     try:
         add_ons = ['plugin.video.blacklodge', 'script.module.blackscrapers'] if condVisibility('System.HasAddon(script.module.blackscrapers)') else ['plugin.video.blacklodge']
         for addon_id in add_ons:
@@ -476,7 +476,7 @@ def clean_settings(info=True):#Fen code
             nfo_file.write(new_content)
             nfo_file.close()
             if info or len(removed_settings) > 0:
-                infoDialog(lang(32110).format(str(len(removed_settings))), heading=addon_name)
+                infoDialog(lang(32110).format(len(removed_settings)), heading=addon_name)
     except:
         from resources.lib.modules import log_utils
         log_utils.log('clean_settings exc', 1)

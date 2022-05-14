@@ -1,3 +1,6 @@
+[B][COLOR gold]v1.01.00[/COLOR][/B]
+- Enhanced My Services menus
+
 [B][COLOR gold]v1.00.03[/COLOR][/B]
 - Menus/settings rearrangement
 

@@ -22,6 +22,7 @@
 import os,sys
 
 import six
+from six.moves.urllib_parse import quote
 
 from resources.lib.modules import control
 from resources.lib.modules import trakt
@@ -85,8 +86,8 @@ class navigator:
         self.addDirectoryItem(32017, 'movies&url=trending', 'people-watching.png', 'DefaultRecentlyAddedMovies.png')
         self.addDirectoryItem(32018, 'movies&url=popular', 'most-popular.png', 'DefaultMovies.png')
         self.addDirectoryItem(32321, 'movies&url=featured', 'featured.png', 'DefaultRecentlyAddedMovies.png')
-        self.addDirectoryItem(32019, 'movies&url=views', 'most-voted.png', 'DefaultMovies.png')
         self.addDirectoryItem(32023, 'movies&url=rating', 'highly-rated.png', 'DefaultMovies.png')
+        self.addDirectoryItem(32019, 'movies&url=views', 'most-voted.png', 'DefaultMovies.png')
         self.addDirectoryItem(32021, 'movies&url=oscars', 'oscar-winners.png', 'DefaultMovies.png')
         self.addDirectoryItem(32020, 'movies&url=boxoffice', 'box-office.png', 'DefaultMovies.png')
         self.addDirectoryItem(32022, 'movies&url=theaters', 'in-theaters.png', 'DefaultRecentlyAddedMovies.png')
@@ -109,7 +110,7 @@ class navigator:
         self.accountCheck()
 
         if providers.SCRAPER_INIT:
-            self.addDirectoryItem('My Services', 'movieServices', 'mymovies.png', 'DefaultMovies.png')
+            self.addDirectoryItem('My Services', 'movieServicesMenu', 'mymovies.png', 'DefaultMovies.png')
 
         if traktCredentials == True and imdbCredentials == True:
             self.addDirectoryItem(32094, 'movies&url=onDeck', 'trakt.png', 'DefaultMovies.png', queue=True)
@@ -174,7 +175,7 @@ class navigator:
         self.accountCheck()
 
         if providers.SCRAPER_INIT:
-            self.addDirectoryItem('My Services', 'tvServices', 'mytvshows.png', 'DefaultTVShows.png')
+            self.addDirectoryItem('My Services', 'tvServicesMenu', 'mytvshows.png', 'DefaultTVShows.png')
 
         if traktCredentials == True and imdbCredentials == True:
 
@@ -280,6 +281,30 @@ class navigator:
         self.endDirectory()
 
 
+    def movie_services_menu(self):
+        enabledServices = self.enabledServices()
+        if enabledServices:
+            if len(enabledServices) > 1:
+                codes = '|'.join([i[1] for i in enabledServices])
+                self.addDirectoryItem('Mixed', 'movieServices&code=%s' % quote(codes), 'mymovies.png', 'DefaultMovies.png')
+            for i in enabledServices:
+                self.addDirectoryItem(i[0], 'movieServices&code=%s' % quote(i[1]), 'services/' + i[0].lower() + '.png', 'DefaultMovies.png')
+
+            self.endDirectory()
+
+
+    def tv_services_menu(self):
+        enabledServices = self.enabledServices()
+        if enabledServices:
+            if len(enabledServices) > 1:
+                codes = '|'.join([i[1] for i in enabledServices])
+                self.addDirectoryItem('Mixed', 'tvServices&code=%s' % quote(codes), 'mytvshows.png', 'DefaultTVShows.png')
+            for i in enabledServices:
+                self.addDirectoryItem(i[0], 'tvServices&code=%s' % quote(i[1]), 'services/' + i[0].lower() + '.png', 'DefaultTVShows.png')
+
+            self.endDirectory()
+
+
     def search(self):
         self.addDirectoryItem(32001, 'movieSearch', 'search.png', 'DefaultAddonsSearch.png')
         self.addDirectoryItem(32002, 'tvSearch', 'search.png', 'DefaultAddonsSearch.png')
@@ -325,6 +350,22 @@ class navigator:
             control.idle()
             control.infoDialog(control.lang(32042), sound=True, icon='WARNING')
             sys.exit()
+
+
+    def enabledServices(self):
+        services = [
+            ('Amazon Prime', '9|119|613', providers.PRIME_ENABLED),
+            ('BBC Iplayer', '38', providers.IPLAYER_ENABLED),
+            ('Crackle', '12', providers.CRACKLE_ENABLED),
+            ('Curiosity Stream', '190', providers.CURSTREAM_ENABLED),
+            ('Disney+', '337', providers.DISNEY_ENABLED),
+            ('HBO Max', '616|384|27', providers.HBO_ENABLED),
+            ('Hulu', '15', providers.HULU_ENABLED),
+            ('Netflix', '8|175', providers.NETFLIX_ENABLED),
+            ('Paramount+', '531', providers.PARAMOUNT_ENABLED),
+            ('Tubi TV', '73', providers.TUBI_ENABLED)
+        ]
+        return [s for s in services if s[2]]
 
 
     def clearCache(self):
@@ -400,7 +441,8 @@ class navigator:
         try: name = control.lang(name)
         except: pass
         url = '%s?action=%s' % (sysaddon, query) if isAction == True else query
-        thumb = os.path.join(artPath, thumb) if not artPath == None else icon
+        if not thumb.startswith('http'):
+            thumb = os.path.join(artPath, thumb) if not artPath == None else icon
         cm = []
         if queue == True: cm.append((queueMenu, 'RunPlugin(%s?action=queueItem)' % sysaddon))
         if not context == None: cm.append((control.lang(context[0]), 'RunPlugin(%s?action=%s)' % (sysaddon, context[1])))

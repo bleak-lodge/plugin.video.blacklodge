@@ -32,7 +32,6 @@ from resources.lib.modules import views
 from resources.lib.modules import utils
 from resources.lib.modules import api_keys
 from resources.lib.modules import log_utils
-from resources.lib.modules.justwatch import providers
 from resources.lib.indexers import navigator
 
 import os,sys,re,datetime
@@ -46,9 +45,10 @@ except: from pysqlite2 import dbapi2 as database
 
 import requests
 
-params = dict(urllib_parse.parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
 
+params = dict(urllib_parse.parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
 action = params.get('action')
+
 
 class tvshows:
     def __init__(self):
@@ -86,6 +86,12 @@ class tvshows:
         self.search_link = 'https://api.themoviedb.org/3/search/tv?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.related_link = 'https://api.themoviedb.org/3/tv/%s/similar?api_key=%s&page=1' % ('%s', self.tm_user)
         self.tmdb_providers_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=popularity.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+
+        self.tmdb_providers_pop_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_providers_voted_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=vote_count.desc&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_providers_rated_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&sort_by=vote_average.desc&vote_count.gte=500&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', self.country)
+        self.tmdb_language_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_original_language=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
+        self.tmdb_genre_link = 'https://api.themoviedb.org/3/discover/tv?api_key=%s&with_genres=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
 
         self.tvmaze_info_link = 'https://api.tvmaze.com/shows/%s'
         self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/tv/%s'
@@ -308,6 +314,37 @@ class tvshows:
         return self.list
 
 
+    def tmdb_genres(self, code):
+        genres = [
+            ('Action & Adventure', '10759'),
+            ('Animation', '16'),
+            ('Comedy', '35'),
+            ('Crime', '80'),
+            ('Documentary', '99'),
+            ('Drama', '18'),
+            ('Family', '10751'),
+            ('Kids', '10762'),
+            ('Mystery', '9648'),
+            ('News', '10763'),
+            ('Reality', '10764'),
+            ('Sci-Fi & Fantasy', '10765'),
+            ('Soap', '10766'),
+            ('Talk-Show', '10767'),
+            ('War & Politics', '10768'),
+            ('Western', '37')
+        ]
+
+        for i in genres: self.list.append(
+            {
+                'name': i[0],
+                'url': self.tmdb_genre_link % (i[1], code),
+                'image': 'genres.png',
+                'action': 'tvshows'
+            })
+        self.addDirectory(self.list)
+        return self.list
+
+
     def networks(self):
         networks = [
             ('A&E', '129', 'https://i.imgur.com/xLDfHjH.png'),
@@ -473,7 +510,7 @@ class tvshows:
         # return self.list
 
 
-    def languages(self):
+    def languages(self, code=None):
         languages = [
             ('Arabic', 'ar'),
             ('Bosnian', 'bs'),
@@ -510,7 +547,7 @@ class tvshows:
         for i in languages: self.list.append(
             {
                 'name': i[0],
-                'url': self.language_link % i[1],
+                'url': self.language_link % i[1] if not code else self.tmdb_language_link % (i[1], code),
                 'image': 'languages.png',
                 'action': 'tvshows'
             })
@@ -532,44 +569,38 @@ class tvshows:
         return self.list
 
 
-    def services(self):
-        services = [
-            ('Amazon Prime', '9|119|613', 'https://i.imgur.com/ru9DDlL.png', providers.PRIME_ENABLED),
-            ('BBC Iplayer', '38', 'https://i.imgur.com/X5je23Q.png', providers.IPLAYER_ENABLED),
-            ('Crackle', '12', 'https://i.imgur.com/HqfbTPh.png', providers.CRACKLE_ENABLED),
-            ('Curiosity Stream', '190', 'https://i.imgur.com/k1iD7WI.png', providers.CURSTREAM_ENABLED),
-            ('Disney+', '337', 'https://i.imgur.com/DVrPgbM.png', providers.DISNEY_ENABLED),
-            ('HBO Max', '616|384|27', 'https://i.imgur.com/mmRMG75.png', providers.HBO_ENABLED),
-            ('Hulu', '15', 'https://i.imgur.com/cLVo7NH.png', providers.HULU_ENABLED),
-            ('Netflix', '8|175', 'https://i.imgur.com/02VN1wq.png', providers.NETFLIX_ENABLED),
-            ('Paramount+', '531', 'https://i.imgur.com/RpfpI9w.png', providers.PARAMOUNT_ENABLED),
-            ('Tubi TV', '73', 'https://i.imgur.com/M1rYcGI.png', providers.TUBI_ENABLED)
-        ]
+    def services(self, code):
+        _code = urllib_parse.quote(code)
 
-        services = [s for s in services if s[3]]
-        if services:
+        navigator.navigator().addDirectoryItem(32011, 'tvTmdbGenres&code=%s' % _code, 'genres.png', 'DefaultTVShows.png')
+        navigator.navigator().addDirectoryItem(32014, 'tvLanguages&code=%s' % _code, 'languages.png', 'DefaultTVShows.png')
 
-            if len(services) > 1:
-                self.list.append(
-                    {
-                        'name': 'Popular on My Services (mixed)',
-                        'url': self.tmdb_providers_link % '|'.join([i[1] for i in services]),
-                        'image': 'featured.png',
-                        'plot': '[I]Provided by JustWatch[/I]',
-                        'action': 'tvshows'
-                        })
+        self.list.append(
+            {
+                'name': control.lang(32018),
+                'url': self.tmdb_providers_pop_link % code,
+                'image': 'people-watching.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'tvshows'
+            })
+        self.list.append(
+            {
+                'name': control.lang(32023),
+                'url': self.tmdb_providers_rated_link % code,
+                'image': 'highly-rated.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'tvshows'
+            })
+        self.list.append(
+            {
+                'name': control.lang(32019),
+                'url': self.tmdb_providers_voted_link % code,
+                'image': 'most-voted.png',
+                'plot': '[I]Provided by JustWatch[/I]',
+                'action': 'tvshows'
+            })
 
-            for i in services:
-                self.list.append(
-                    {
-                        'name': i[0],
-                        'url': self.tmdb_providers_link % i[1],
-                        'image': i[2],
-                        'plot': '[I]Provided by JustWatch[/I]',
-                        'action': 'tvshows'
-                    })
-
-            self.addDirectory(self.list)
+        self.addDirectory(self.list)
         return self.list
 
 

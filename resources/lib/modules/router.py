@@ -54,6 +54,8 @@ def routing(_argv):
 
     addon_id = params.get('addon_id')
 
+    code = params.get('code')
+
     windowedtrailer = params.get('windowedtrailer')
     windowedtrailer = int(windowedtrailer) if windowedtrailer in ('0', '1') else 0
 
@@ -184,33 +186,41 @@ def routing(_argv):
         from resources.lib.indexers import movies
         movies.movies().search_term(name)
 
-    elif action == 'movieMosts':
+    elif action == 'movieServicesMenu':
+        from resources.lib.indexers import navigator
+        navigator.navigator().movie_services_menu()
+
+    elif action == 'movieServices':
         from resources.lib.indexers import movies
-        movies.movies().mosts()
+        movies.movies().services(code)
+
+    elif action == 'movieTmdbGenres':
+        from resources.lib.indexers import movies
+        movies.movies().tmdb_genres(code)
+
+    elif action == 'movieLanguages':
+        from resources.lib.indexers import movies
+        movies.movies().languages(code)
+
+    elif action == 'movieCertificates':
+        from resources.lib.indexers import movies
+        movies.movies().certifications(code)
+
+    elif action == 'movieYears':
+        from resources.lib.indexers import movies
+        movies.movies().years(code)
+
+    elif action == 'movieDecades':
+        from resources.lib.indexers import movies
+        movies.movies().decades(code)
 
     elif action == 'movieGenres':
         from resources.lib.indexers import movies
         movies.movies().genres()
 
-    elif action == 'movieLanguages':
+    elif action == 'movieMosts':
         from resources.lib.indexers import movies
-        movies.movies().languages()
-
-    elif action == 'movieServices':
-        from resources.lib.indexers import movies
-        movies.movies().services()
-
-    elif action == 'movieCertificates':
-        from resources.lib.indexers import movies
-        movies.movies().certifications()
-
-    elif action == 'movieYears':
-        from resources.lib.indexers import movies
-        movies.movies().years()
-
-    elif action == 'movieDecades':
-        from resources.lib.indexers import movies
-        movies.movies().decades()
+        movies.movies().mosts()
 
     elif action == 'movieKeywords':
         from resources.lib.indexers import movies
@@ -264,13 +274,21 @@ def routing(_argv):
         from resources.lib.indexers import tvshows
         tvshows.tvshows().networks()
 
-    elif action == 'tvLanguages':
-        from resources.lib.indexers import tvshows
-        tvshows.tvshows().languages()
+    elif action == 'tvServicesMenu':
+        from resources.lib.indexers import navigator
+        navigator.navigator().tv_services_menu()
 
     elif action == 'tvServices':
         from resources.lib.indexers import tvshows
-        tvshows.tvshows().services()
+        tvshows.tvshows().services(code)
+
+    elif action == 'tvLanguages':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().languages(code)
+
+    elif action == 'tvTmdbGenres':
+        from resources.lib.indexers import tvshows
+        tvshows.tvshows().tmdb_genres(code)
 
     elif action == 'tvCertificates':
         from resources.lib.indexers import tvshows

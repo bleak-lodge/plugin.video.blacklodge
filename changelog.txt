@@ -1,3 +1,6 @@
+[B][COLOR gold]v1.01.01[/COLOR][/B]
+- Fix settings file cleanup
+
 [B][COLOR gold]v1.01.00[/COLOR][/B]
 - Enhanced My Services menus
 

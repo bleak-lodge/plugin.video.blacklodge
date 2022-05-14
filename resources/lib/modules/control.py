@@ -443,6 +443,7 @@ def clean_settings(info=True):
         return content
 
     try:
+        import xml.etree.ElementTree as ET
         add_ons = ['plugin.video.blacklodge', 'script.module.blackscrapers'] if condVisibility('System.HasAddon(script.module.blackscrapers)') else ['plugin.video.blacklodge']
         for addon_id in add_ons:
             removed_settings = []
@@ -472,9 +473,9 @@ def clean_settings(info=True):
                 if setting_default: dict_item['default'] = setting_default
                 current_user_settings.append(dict_item)
             new_content = _make_content(current_user_settings)
-            nfo_file = xbmcvfs.File(settings_xml, 'w')
-            nfo_file.write(new_content)
-            nfo_file.close()
+            xml_file = xbmcvfs.File(settings_xml, 'w')
+            xml_file.write(new_content)
+            xml_file.close()
             if info or len(removed_settings) > 0:
                 infoDialog(lang(32110).format(len(removed_settings)), heading=addon_name)
     except:

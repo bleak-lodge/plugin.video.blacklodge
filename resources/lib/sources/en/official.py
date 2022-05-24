@@ -41,20 +41,20 @@ class source:
             return
 
 
-    def tvshow(self, imdb, tvdb, tvshowtitle, localtvshowtitle, aliases, year):
+    def tvshow(self, imdb, tmdb, tvshowtitle, localtvshowtitle, aliases, year):
         if not providers.SCRAPER_INIT:
             return
 
         try:
             self.aliases.extend(aliases)
-            url = {'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year}
+            url = {'imdb': imdb, 'tmdb': tmdb, 'tvshowtitle': tvshowtitle, 'year': year}
             url = urlencode(url)
             return url
         except Exception:
             return
 
 
-    def episode(self, url, imdb, tvdb, title, premiered, season, episode):
+    def episode(self, url, imdb, tmdb, title, premiered, season, episode):
         try:
             if url is None: return
             url = parse_qs(url)
@@ -139,7 +139,7 @@ class source:
                         streams.append(('netflix', 'plugin://plugin.video.netflix/play_strm/%s/' % netflix_id))
 
             if providers.PRIME_ENABLED:
-                prv = [o for o in offers if o['package_short_name'] in ['amp', 'prv', 'aim']]
+                prv = [o for o in offers if o['package_short_name'] in ['amp', 'prv', 'aim', 'app']]
                 if prv:
                     prime_id = prv[0]['urls']['standard_web']
                     prime_id = prime_id.rstrip('/').split('gti=')[1]
@@ -216,6 +216,20 @@ class source:
                     tbv_url = tbv[0]['urls']['standard_web']
                     tbv_id = tbv_url.split('?')[0].strip('/').split('/')[-1]
                     streams.append(('tubi tv', 'plugin://plugin.video.tubi.m7/?mode=%splay-tubitv' % tbv_id))
+
+            if providers.UKTVPLAY_ENABLED:
+                ukt = [o for o in offers if o['package_short_name'] == 'ukt']
+                if ukt:
+                    ukt_url = ukt[0]['urls']['standard_web']
+                    ukt_id = ukt_url.split('?')[0].strip('/').split('/')[-1]
+                    streams.append(('uktv play', 'plugin://plugin.video.catchuptvandmore/resources/lib/channels/uk/uktvplay/get_video_url/?item_id=uktvplay&data_video_id=' + ukt_id))
+
+            if providers.PLUTO_ENABLED:
+                ptv = [o for o in offers if o['package_short_name'] == 'ptv']
+                if ptv:
+                    ptv_url = ptv[0]['urls']['deeplink_rokuos']
+                    ptv_id = re.findall('contentID=(.+?)&', ptv_url)[0]
+                    streams.append(('pluto tv', 'plugin://plugin.video.plutotv/play/vod/' + ptv_id))
 
             if streams:
                 for s in streams:

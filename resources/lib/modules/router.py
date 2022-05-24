@@ -546,7 +546,11 @@ def routing(_argv):
 
     elif action == 'changelog':
         from resources.lib.modules import changelog
-        changelog.get()	
+        changelog.get()
+
+    elif action == 'servicesInfo':
+        from resources.lib.modules import changelog
+        changelog.services_info()
 
     elif action == 'cleanSettings':
         from resources.lib.modules import control

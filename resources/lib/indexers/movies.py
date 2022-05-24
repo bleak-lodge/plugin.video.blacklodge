@@ -598,7 +598,7 @@ class movies:
         return self.list
 
 
-    def certifications(self, code):
+    def certifications(self, code=None):
         certificates = ['G', 'PG', 'PG-13', 'R', 'NC-17']
 
         for i in certificates: self.list.append(
@@ -612,7 +612,7 @@ class movies:
         return self.list
 
 
-    def years(self, code):
+    def years(self, code=None):
         year = (self.datetime.strftime('%Y'))
         for i in range(int(year)-0, 1900, -1): self.list.append(
             {
@@ -625,7 +625,7 @@ class movies:
         return self.list
 
 
-    def decades(self, code):
+    def decades(self, code=None):
         year = (self.datetime.strftime('%Y'))
 
         dec = int(year[:3]) * 10

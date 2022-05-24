@@ -196,8 +196,8 @@ msgid "Episode Lists"
 msgstr "Λίστες Επεισοδίων"
 
 msgctxt "#32042"
-msgid "No Trakt or IMDb account found."
-msgstr "Δεν βρέθηκε λογαριασμός Trakt ή IMDb."
+msgid "No Trakt, IMDb account or supported services add-ons found."
+msgstr "Δεν βρέθηκε λογαριασμός Trakt ή IMDb ή συμβατά πρόσθετα."
 
 msgctxt "#32043"
 msgid "[B]Blacklodge[/B] : Settings"
@@ -1321,7 +1321,7 @@ msgid "Official Providers"
 msgstr "Επίσημες Πηγές"
 
 msgctxt "#32634"
-msgid "For these scrapers to work, their equivalent[CR]  Kodi add-on is required to be installed and configured."
+msgid "For these providers to work, their equivalent[CR]  Kodi add-on is required to be installed and configured."
 msgstr "Απαιτείται το αντίστοιχο add-on[CR]  για κάθε υπηρεσία για να λειτουργήσουν."
 
 msgctxt "#32635"
@@ -1339,3 +1339,7 @@ msgstr "Ενεργοποίηση εξωτερικών παρόχων"
 msgctxt "#32638"
 msgid "Filters"
 msgstr "Φίλτρα"
+
+msgctxt "#32639"
+msgid "INFO - press here"
+msgstr "Πληροφορίες - επιλέξτε εδώ"

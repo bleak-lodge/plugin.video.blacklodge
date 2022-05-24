@@ -12,5 +12,7 @@ HULU_ENABLED = (control.condVisibility('System.HasAddon(slyguy.hulu)') and contr
 PARAMOUNT_ENABLED = (control.condVisibility('System.HasAddon(slyguy.paramount.plus)') and control.setting('paramount') == 'true')
 CRACKLE_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.crackle)') and control.setting('crackle') == 'true')
 TUBI_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.tubi.m7)') and control.setting('tubi') == 'true')
+UKTVPLAY_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.catchuptvandmore)') and control.setting('uktvplay') == 'true')
+PLUTO_ENABLED = (control.condVisibility('System.HasAddon(plugin.video.plutotv)') and control.setting('plutotv') == 'true')
 
-SCRAPER_INIT = any(e for e in [NETFLIX_ENABLED, PRIME_ENABLED, HBO_ENABLED, DISNEY_ENABLED, IPLAYER_ENABLED, CURSTREAM_ENABLED, HULU_ENABLED, PARAMOUNT_ENABLED, CRACKLE_ENABLED, TUBI_ENABLED])
+SCRAPER_INIT = any(e for e in [NETFLIX_ENABLED, PRIME_ENABLED, HBO_ENABLED, DISNEY_ENABLED, IPLAYER_ENABLED, CURSTREAM_ENABLED, HULU_ENABLED, PARAMOUNT_ENABLED, CRACKLE_ENABLED, TUBI_ENABLED, UKTVPLAY_ENABLED, PLUTO_ENABLED])

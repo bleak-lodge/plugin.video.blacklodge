@@ -1,3 +1,9 @@
+[B][COLOR gold]v1.01.02[/COLOR][/B]
+- Added some more official services:
+    Pluto TV - played through plugin.video.plutotv from official Kodi repository
+    UKTV Play - played through plugin.video.catchuptvandmore from official Kodi repository
+- Added info text for Official providers on settings
+
 [B][COLOR gold]v1.01.01[/COLOR][/B]
 - Fix settings file cleanup
 

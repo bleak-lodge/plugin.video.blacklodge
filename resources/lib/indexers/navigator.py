@@ -354,7 +354,7 @@ class navigator:
 
     def enabledServices(self):
         services = [
-            ('Amazon Prime', '9|119|613', providers.PRIME_ENABLED),
+            ('Amazon Prime', '9|119|613|582', providers.PRIME_ENABLED),
             ('BBC Iplayer', '38', providers.IPLAYER_ENABLED),
             ('Crackle', '12', providers.CRACKLE_ENABLED),
             ('Curiosity Stream', '190', providers.CURSTREAM_ENABLED),
@@ -363,7 +363,9 @@ class navigator:
             ('Hulu', '15', providers.HULU_ENABLED),
             ('Netflix', '8|175', providers.NETFLIX_ENABLED),
             ('Paramount+', '531', providers.PARAMOUNT_ENABLED),
-            ('Tubi TV', '73', providers.TUBI_ENABLED)
+            ('Pluto TV', '300', providers.PLUTO_ENABLED),
+            ('Tubi TV', '73', providers.TUBI_ENABLED),
+            ('UKTV Play', '137', providers.UKTVPLAY_ENABLED)
         ]
         return [s for s in services if s[2]]
 

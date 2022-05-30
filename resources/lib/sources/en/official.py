@@ -28,13 +28,13 @@ class source:
         self.aliases = []
 
 
-    def movie(self, imdb, title, localtitle, aliases, year):
+    def movie(self, imdb, tmdb, title, localtitle, aliases, year):
         if not providers.SCRAPER_INIT:
             return
 
         try:
             self.aliases.extend(aliases)
-            url = {'imdb': imdb, 'title': title, 'year': year}
+            url = {'imdb': imdb, 'tmdb': tmdb, 'title': title, 'year': year}
             url = urlencode(url)
             return url
         except:
@@ -84,8 +84,11 @@ class source:
             # log_utils.log('justwatch {0} providers: {1}'.format(self.country, repr(r0)))
 
             if content == 'movies':
-                tmdb = requests.get(self.tmdb_by_imdb % data['imdb']).json()
-                tmdb = tmdb['movie_results'][0]['id']
+                tmdb = data['tmdb']
+                if not tmdb or tmdb == '0':
+                    tmdb = requests.get(self.tmdb_by_imdb % data['imdb']).json()
+                    tmdb = tmdb['movie_results'][0]['id']
+                    tmdb = str(tmdb)
 
                 r = jw.search_for_item(query=title.lower(), content_types=['movie'], release_year_from=int(year)-1, release_year_until=int(year)+1)
                 items = r['items']
@@ -93,7 +96,7 @@ class source:
                 for item in items:
                     tmdb_id = item['scoring']
                     tmdb_id = [t['value'] for t in tmdb_id if t['provider_type'] == 'tmdb:id']
-                    if tmdb_id and tmdb_id[0] == tmdb:
+                    if tmdb_id and str(tmdb_id[0]) == tmdb:
                         result = item
                         break
 
@@ -139,21 +142,21 @@ class source:
                         streams.append(('netflix', 'plugin://plugin.video.netflix/play_strm/%s/' % netflix_id))
 
             if providers.PRIME_ENABLED:
-                prv = [o for o in offers if o['provider_id'] in [9, 119, 613, 582] and o['monetization_type'] == 'flatrate']
+                prv = [o for o in offers if o['provider_id'] in [9, 119, 613, 582] and o['monetization_type'] in ['free', 'ads', 'flatrate']]
                 if prv:
                     prime_id = prv[0]['urls']['standard_web']
                     prime_id = prime_id.rstrip('/').split('gti=')[1]
                     streams.append(('amazon prime', 'plugin://plugin.video.amazon-test/?asin=%s&mode=PlayVideo&name=None&adult=0&trailer=0&selbitrate=0' % prime_id))
 
             if providers.HBO_ENABLED:
-                hbm = [o for o in offers if o['provider_id'] in [616, 384, 27, 425] and o['monetization_type'] == 'flatrate']
+                hbm = [o for o in offers if o['provider_id'] in [616, 384, 27, 425] and o['monetization_type'] in ['free', 'ads', 'flatrate']]
                 if hbm:
                     hbo_id = hbm[0]['urls']['standard_web']
                     hbo_id = hbo_id.rstrip('/').split('/')[-1]
                     streams.append(('hbo max', 'plugin://slyguy.hbo.max/?_=play&slug=' + hbo_id))
 
             if providers.DISNEY_ENABLED:
-                dnp = [o for o in offers if o['provider_id'] == 337 and o['monetization_type'] == 'flatrate']
+                dnp = [o for o in offers if o['provider_id'] == 337 and o['monetization_type'] in ['free', 'ads', 'flatrate']]
                 if dnp:
                     disney_id = dnp[0]['urls']['deeplink_web']
                     disney_id = disney_id.rstrip('/').split('/')[-1]

@@ -435,7 +435,7 @@ class sources:
             localtitle = cache.get(self.getLocalTitle, 168, title, imdb)
             aliases = cache.get(self.getAliasTitles, 168, imdb, localtitle)
             log_utils.log('Scrape - movtitle: '+title+' | localtitle: '+localtitle+' | year: '+year+' | aliases: '+repr(aliases))
-            for i in sourceDict: threads.append(workers.Thread(self.getMovieSource, title, localtitle, aliases, year, imdb, i[0], i[1]))
+            for i in sourceDict: threads.append(workers.Thread(self.getMovieSource, title, localtitle, aliases, year, imdb, tmdb, i[0], i[1]))
         else:
             #tvshowtitle = self.getTitle(tvshowtitle)
             tvshowtitle, year, season, episode = cleantitle.scene_tvtitle(tvshowtitle, year, season, episode)
@@ -624,7 +624,7 @@ class sources:
             pass
 
 
-    def getMovieSource(self, title, localtitle, aliases, year, imdb, source, call):
+    def getMovieSource(self, title, localtitle, aliases, year, imdb, tmdb, source, call):
 
         try:
             dbcon = database.connect(self.sourceFile)
@@ -664,7 +664,7 @@ class sources:
             pass
 
         try:
-            if url == None: url = call.movie(imdb, title, localtitle, aliases, year)
+            if url == None: url = call.movie(imdb, tmdb, title, localtitle, aliases, year)
             if url == None: raise Exception()
             dbcur.execute("DELETE FROM rel_url WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'" % (source, imdb, '', ''))
             dbcur.execute("INSERT INTO rel_url Values (?, ?, ?, ?, ?)", (source, imdb, '', '', repr(url)))

@@ -654,7 +654,6 @@ class movies:
                 'name': control.lang(32018),
                 'url': self.tmdb_providers_pop_link % code,
                 'image': 'people-watching.png',
-                'plot': '[I]Provided by JustWatch[/I]',
                 'action': 'movies'
             })
         self.list.append(
@@ -662,7 +661,6 @@ class movies:
                 'name': control.lang(32023),
                 'url': self.tmdb_providers_rated_link % code,
                 'image': 'highly-rated.png',
-                'plot': '[I]Provided by JustWatch[/I]',
                 'action': 'movies'
             })
         self.list.append(
@@ -670,7 +668,6 @@ class movies:
                 'name': control.lang(32019),
                 'url': self.tmdb_providers_voted_link % code,
                 'image': 'most-voted.png',
-                'plot': '[I]Provided by JustWatch[/I]',
                 'action': 'movies'
             })
         self.addDirectory(self.list)

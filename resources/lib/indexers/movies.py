@@ -97,6 +97,7 @@ class movies:
         self.tmdb_language_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&with_original_language=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
         self.tmdb_certification_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&certification_country=US&certification=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
         self.tmdb_genre_link = 'https://api.themoviedb.org/3/discover/movie?api_key=%s&with_genres=%s&language=en-US&with_watch_providers=%s&watch_region=%s&page=1' % (self.tm_user, '%s', '%s', self.country)
+        self.tmdb_providers_avail_link = 'https://api.themoviedb.org/3/movie/%s/watch/providers?api_key=%s' % ('%s', self.tm_user)
 
         self.keyword_link = 'https://www.imdb.com/search/title?title_type=movie,short,tvMovie&release_date=,date[0]&keywords=%s&sort=moviemeter,asc&count=%s&start=1' % ('%s', self.items_per_page)
         self.customlist_link = 'https://www.imdb.com/list/%s/?view=detail&sort=list_order,asc&title_type=movie,tvMovie&start=1'
@@ -148,7 +149,7 @@ class movies:
         self.session.close()
 
 
-    def get(self, url, idx=True, create_directory=True):
+    def get(self, url, idx=True, create_directory=True, code=None):
         try:
             try: url = getattr(self, url + '_link')
             except: pass
@@ -190,6 +191,11 @@ class movies:
 
             elif u in self.tmdb_link:
                 self.list = cache.get(self.tmdb_list, 24, url)
+                if code:
+                    self.list = [i for i in self.list if self.services_availability(i['tmdb'], code)]
+                    if not self.list:
+                        control.infoDialog('Nothing found on your services')
+                        raise Exception()
                 if idx == True: self.worker()
 
 
@@ -264,6 +270,32 @@ class movies:
         dbcur.close()
         url = self.tm_search_link % urllib_parse.quote(q)
         self.get(url)
+
+
+    def search_services_new(self, code):
+        control.idle()
+
+        t = control.lang(32010)
+        k = control.keyboard('', t)
+        k.doModal()
+        q = k.getText() if k.isConfirmed() else None
+
+        if not q: return
+        q = q.lower()
+
+        try:
+            dbcur.executescript("CREATE TABLE IF NOT EXISTS movies (ID Integer PRIMARY KEY AUTOINCREMENT, term);")
+        except:
+            pass
+
+        dbcon = database.connect(control.searchFile)
+        dbcur = dbcon.cursor()
+        dbcur.execute("DELETE FROM movies WHERE term = ?", (q,))
+        dbcur.execute("INSERT INTO movies VALUES (?,?)", (None,q))
+        dbcon.commit()
+        dbcur.close()
+        url = self.tm_search_link % urllib_parse.quote(q)
+        self.get(url, code=code)
 
 
     def search_term(self, q):
@@ -672,6 +704,24 @@ class movies:
             })
         self.addDirectory(self.list)
         return self.list
+
+
+    def services_availability(self, tmdb, code):
+        url = self.tmdb_providers_avail_link % tmdb
+        r = self.session.get(url, timeout=10).json()
+        r = r['results'].get(self.country)
+        if r:
+            offers = []
+            offers.extend((r.get('free', {}), r.get('ads', {}), r.get('flatrate', {})))
+            offers = [o for o in offers if o]
+            if offers:
+                providers = []
+                for o in offers[0]:
+                    providers.append(str(o['provider_id']))
+                if providers:
+                    if any(p in code.split('|') for p in providers):
+                        return True
+        return False
 
 
     def userlists(self):

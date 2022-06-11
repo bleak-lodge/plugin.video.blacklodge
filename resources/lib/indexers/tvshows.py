@@ -53,6 +53,7 @@ action = params.get('action')
 class tvshows:
     def __init__(self):
         self.list = []
+        self.code = ''
 
         self.session = requests.Session()
 
@@ -132,7 +133,7 @@ class tvshows:
         self.session.close()
 
 
-    def get(self, url, idx=True, create_directory=True, code=None):
+    def get(self, url, idx=True, create_directory=True, code=''):
         try:
             try: url = getattr(self, url + '_link')
             except: pass
@@ -140,6 +141,7 @@ class tvshows:
             try: u = urllib_parse.urlparse(url).netloc.lower()
             except: pass
 
+            self.code = code
 
             if u in self.trakt_link and '/users/' in url:
                 try:
@@ -171,12 +173,7 @@ class tvshows:
                 if idx == True: self.worker()
 
             elif u in self.tmdb_link:
-                self.list = cache.get(self.tmdb_list, 24, url)
-                if code:
-                    self.list = [i for i in self.list if self.services_availability(i['tmdb'], code)]
-                    if not self.list:
-                        control.infoDialog('Nothing found on your services')
-                        raise Exception()
+                self.list = cache.get(self.tmdb_list, 24, url, self.code)
                 if idx == True: self.worker()
 
             if idx == True and create_directory == True: self.tvshowDirectory(self.list)
@@ -186,9 +183,10 @@ class tvshows:
             pass
 
 
-    def search(self):
+    def search(self, code=''):
+        code = urllib_parse.quote(code) if code else ''
 
-        navigator.navigator().addDirectoryItem(32603, 'tvSearchnew', 'search.png', 'DefaultTVShows.png')
+        navigator.navigator().addDirectoryItem(32603, 'tvSearchnew&code=%s' % code, 'search.png', 'DefaultTVShows.png')
 
         dbcon = database.connect(control.searchFile)
         dbcur = dbcon.cursor()
@@ -206,7 +204,7 @@ class tvshows:
         for (id,term) in dbcur.fetchall():
             if term not in str(lst):
                 delete_option = True
-                navigator.navigator().addDirectoryItem(term.title(), 'tvSearchterm&name=%s' % term, 'search.png', 'DefaultTVShows.png')
+                navigator.navigator().addDirectoryItem(term.title(), 'tvSearchterm&name=%s&code=%s' % (term, code), 'search.png', 'DefaultTVShows.png')
                 lst += [(term)]
         dbcur.close()
 
@@ -216,7 +214,7 @@ class tvshows:
         navigator.navigator().endDirectory(False)
 
 
-    def search_new(self):
+    def search_new(self, code=''):
         control.idle()
 
         t = control.lang(32010)
@@ -226,32 +224,6 @@ class tvshows:
 
         if not q: return
         q = q.lower()
-
-        dbcon = database.connect(control.searchFile)
-        dbcur = dbcon.cursor()
-        dbcur.execute("DELETE FROM tvshow WHERE term = ?", (q,))
-        dbcur.execute("INSERT INTO tvshow VALUES (?,?)", (None,q))
-        dbcon.commit()
-        dbcur.close()
-        url = self.tm_search_link % urllib_parse.quote(q)
-        self.get(url)
-
-
-    def search_services_new(self, code):
-        control.idle()
-
-        t = control.lang(32010)
-        k = control.keyboard('', t)
-        k.doModal()
-        q = k.getText() if k.isConfirmed() else None
-
-        if not q: return
-        q = q.lower()
-
-        try:
-            dbcur.executescript("CREATE TABLE IF NOT EXISTS tvshow (ID Integer PRIMARY KEY AUTOINCREMENT, term);")
-        except:
-            pass
 
         dbcon = database.connect(control.searchFile)
         dbcur = dbcon.cursor()
@@ -263,7 +235,7 @@ class tvshows:
         self.get(url, code=code)
 
 
-    def search_term(self, q):
+    def search_term(self, q, code=''):
         control.idle()
         q = q.lower()
 
@@ -274,7 +246,7 @@ class tvshows:
         dbcon.commit()
         dbcur.close()
         url = self.tm_search_link % urllib_parse.quote(q)
-        self.get(url)
+        self.get(url, code=code)
 
 
     def mosts(self):
@@ -639,12 +611,13 @@ class tvshows:
         r = r['results'].get(self.country)
         if r:
             offers = []
-            offers.extend((r.get('free', {}), r.get('ads', {}), r.get('flatrate', {})))
+            offers.extend((r.get('free'), r.get('ads'), r.get('flatrate')))
             offers = [o for o in offers if o]
             if offers:
                 providers = []
-                for o in offers[0]:
-                    providers.append(str(o['provider_id']))
+                for o in offers:
+                    for c in o:
+                        providers.append(str(c['provider_id']))
                 if providers:
                     if any(p in code.split('|') for p in providers):
                         return True
@@ -1135,7 +1108,7 @@ class tvshows:
             return
 
 
-    def tmdb_list(self, url):
+    def tmdb_list(self, url, code=None):
         try:
             #log_utils.log('tmdb_url: ' + url)
             result = self.session.get(url, timeout=16)
@@ -1168,6 +1141,10 @@ class tvshows:
 
             try:
                 tmdb = str(item['id'])
+
+                if code:
+                    if not self.services_availability(tmdb, code):
+                        continue
 
                 title = item['name']
 
@@ -1640,6 +1617,7 @@ class tvshows:
 
             icon = control.addonNext()
             url = '%s?action=tvshowPage&url=%s' % (sysaddon, urllib_parse.quote_plus(url))
+            if self.code: url += '&code=%s' % urllib_parse.quote(self.code)
 
             try: item = control.item(label=nextMenu, offscreen=True)
             except: item = control.item(label=nextMenu)

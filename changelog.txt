@@ -1,3 +1,6 @@
+[B][COLOR gold]v1.02.05[/COLOR][/B]
+- Small fix for premium hoster appearing on free sources list
+
 [B][COLOR gold]v1.02.04[/COLOR][/B]
 - Added support for plugin.video.tubitv by Lunatixz on Official providers
 - Reworked auto-subtitles functionality for hopefully better subtitles matching

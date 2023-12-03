@@ -87,7 +87,7 @@ class movies:
         self.fanart_tv_level_link = 'http://webservice.fanart.tv/v3/level'
 
         ## TMDb ##
-        self.tmdb_api_link = 'https://api.themoviedb.org/3/movie/%s?api_key=%s&language=%s&append_to_response=credits,external_ids' % ('%s', self.tm_user, self.lang)
+        self.tmdb_api_link = 'https://api.themoviedb.org/3/movie/%s?api_key=%s&language=%s&append_to_response=credits,release_dates,external_ids' % ('%s', self.tm_user, self.lang)
         self.tmdb_by_imdb = 'https://api.themoviedb.org/3/find/%s?api_key=%s&external_source=imdb_id' % ('%s', self.tm_user)
         self.tm_search_link = 'https://api.themoviedb.org/3/search/movie?api_key=%s&language=en-US&query=%s&page=1' % (self.tm_user, '%s')
         self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
@@ -1229,7 +1229,7 @@ class movies:
                 else: poster = '0'
 
                 self.list.append({'title': title, 'originaltitle': originaltitle, 'premiered': premiered, 'year': year, 'rating': rating, 'votes': votes, 'plot': plot, 'imdb': '0',
-                                  'tmdb': tmdb, 'tvdb': '0', 'poster': poster, 'mediatype': 'movie', 'page': page, 'next': next})
+                                  'tmdb': tmdb, 'tvdb': '0', 'mpaa': '0', 'poster': poster, 'mediatype': 'movie', 'page': page, 'next': next})
             except:
                 log_utils.log('tmdb_list1', 1)
                 pass
@@ -1386,6 +1386,20 @@ class movies:
                 duration = ''
             if not duration: duration = '0'
 
+            mpaa = self.list[i]['mpaa']
+            if mpaa == '0':
+                try:
+                    m = item['release_dates']['results']
+                    m = [i['release_dates'] for i in m if i['iso_3166_1'] == 'US'][0]
+                    for c in m:
+                        if c['certification']:
+                            if c['type'] not in [3, 4, 5, 6]:
+                                continue
+                            mpaa = c['certification']
+                            break
+                except:
+                    pass
+
             # rating = self.list[i]['rating']
             # votes = self.list[i]['votes']
             # if rating == votes == '0':
@@ -1505,7 +1519,7 @@ class movies:
             fanart = fanart2 or fanart1
 
             item = {'title': title, 'originaltitle': title, 'label': label, 'year': year, 'imdb': imdb, 'tmdb': tmdb, 'poster': poster, 'banner': banner, 'fanart': fanart,
-                    'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'discart': discart, 'premiered': premiered, 'genre': genre, 'duration': duration,
+                    'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'discart': discart, 'premiered': premiered, 'genre': genre, 'duration': duration, 'mpaa': mpaa,
                     'director': director, 'writer': writer, 'castwiththumb': castwiththumb, 'plot': plot, 'tagline': tagline, 'status': status, 'studio': studio, 'country': country}
             item = dict((k,v) for k, v in six.iteritems(item) if not v == '0')
             self.list[i].update(item)
@@ -1631,6 +1645,8 @@ class movies:
                 cm.append(('[I]Scrape Filterless[/I]', 'RunPlugin(%s?action=playUnfiltered&title=%s&year=%s&imdb=%s&meta=%s&t=%s)' % (sysaddon, systitle, year, imdb, sysmeta, self.systime)))
 
                 cm.append((clearProviders, 'RunPlugin(%s?action=clearCacheProviders)' % sysaddon))
+
+                #cm.append(('[I]Clear All Cache[/I]', 'RunPlugin(%s?action=clearAllCache)' % sysaddon))
 
                 art = {'icon': poster, 'thumb': poster, 'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape}
 

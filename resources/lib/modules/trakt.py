@@ -29,7 +29,6 @@ import simplejson as json
 
 from resources.lib.modules import cache
 from resources.lib.modules import cleandate
-from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import log_utils
 from resources.lib.modules import utils
@@ -49,6 +48,14 @@ if V2_API_KEY == "" or CLIENT_SECRET == "":
     V2_API_KEY = api_keys.trakt_client_id
     CLIENT_SECRET = api_keys.trakt_secret
 
+
+from resources.lib.modules.ratelimit import limits, sleep_and_retry
+@sleep_and_retry
+@limits(calls=1, period=1)
+def check_limit():
+    return
+
+
 def __getTrakt(url, post=None):
     try:
         url = urllib_parse.urljoin(BASE_URL, url) if not url.startswith(BASE_URL) else url
@@ -58,16 +65,10 @@ def __getTrakt(url, post=None):
         if getTraktCredentialsInfo():
             headers.update({'Authorization': 'Bearer %s' % control.setting('trakt.token')})
 
-        # need to fix client.request post
-        # result = client.request(url, post=post, headers=headers, output='extended', error=True)
-        # result = utils.byteify(result)
-        # resp_code = result[1]
-        # resp_header = result[2]
-        # result = result[0]
-
         if not post:
             r = requests.get(url, headers=headers, timeout=30)
         else:
+            check_limit()
             r = requests.post(url, data=post, headers=headers, timeout=30)
         r.encoding = 'utf-8'
 
@@ -93,9 +94,7 @@ def __getTrakt(url, post=None):
         oauth = urllib_parse.urljoin(BASE_URL, '/oauth/token')
         opost = {'client_id': V2_API_KEY, 'client_secret': CLIENT_SECRET, 'redirect_uri': REDIRECT_URI, 'grant_type': 'refresh_token', 'refresh_token': control.setting('trakt.refresh')}
 
-        # result = client.request(oauth, post=json.dumps(opost), headers=headers)
-        # result = utils.json_loads_as_str(result)
-
+        check_limit()
         result = requests.post(oauth, data=json.dumps(opost), headers=headers, timeout=30).json()
         log_utils.log('Trakt token refresh: ' + repr(result))
 
@@ -105,13 +104,10 @@ def __getTrakt(url, post=None):
 
         headers['Authorization'] = 'Bearer %s' % token
 
-        # result = client.request(url, post=post, headers=headers, output='extended', error=True)
-        # result = utils.byteify(result)
-        # return result[0], result[2]
-
         if not post:
             r = requests.get(url, headers=headers, timeout=30)
         else:
+            check_limit()
             r = requests.post(url, data=post, headers=headers, timeout=30)
         r.encoding = 'utf-8'
         return r.text, r.headers
@@ -170,16 +166,14 @@ def authTrakt():
 
         token, refresh = r['access_token'], r['refresh_token']
 
-        headers = {'Content-Type': 'application/json', 'trakt-api-key': V2_API_KEY, 'trakt-api-version': 2, 'Authorization': 'Bearer %s' % token}
+        headers = {'Content-Type': 'application/json', 'trakt-api-key': V2_API_KEY, 'trakt-api-version': '2', 'Authorization': 'Bearer %s' % token}
 
 
-        result = client.request(urllib_parse.urljoin(BASE_URL, '/users/me'), headers=headers)
-        result = utils.json_loads_as_str(result)
+        result = requests.get(urllib_parse.urljoin(BASE_URL, '/users/me'), headers=headers).json()
 
         user = result['username']
         authed = '' if user == '' else 'yes'
 
-        #print('info - ' + token)
         control.setSetting(id='trakt.user', value=user)
         control.setSetting(id='trakt.authed', value=authed)
         control.setSetting(id='trakt.authed2', value=authed)
@@ -381,7 +375,7 @@ def syncTVShows(user):
     try:
         if getTraktCredentialsInfo() == False: return
         indicators = getTraktAsJson('/users/me/watched/shows?extended=full')
-        indicators = [(i['show']['ids']['tmdb'], i['show']['aired_episodes'], sum([[(s['number'], e['number']) for e in s['episodes']] for s in i['seasons']], [])) for i in indicators]
+        indicators = [(i['show']['ids']['imdb'], i['show']['aired_episodes'], sum([[(s['number'], e['number']) for e in s['episodes']] for s in i['seasons']], [])) for i in indicators]
         indicators = [(str(i[0]), int(i[1]), i[2]) for i in indicators]
         return indicators
     except:

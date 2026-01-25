@@ -81,10 +81,10 @@ class navigator:
             self.addDirectoryItem(32015, 'movieCertificates', 'certificates.png', 'DefaultMovies.png')
             self.addDirectoryItem('Movie Mosts', 'movieMosts', 'featured.png', 'DefaultMovies.png')
             self.addDirectoryItem(32017, 'movies&url=trending', 'people-watching.png', 'DefaultRecentlyAddedMovies.png')
-            self.addDirectoryItem(32018, 'movies&url=popular', 'most-popular.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32321, 'movies&url=featured', 'featured.png', 'DefaultRecentlyAddedMovies.png')
-            self.addDirectoryItem(32023, 'movies&url=rating', 'highly-rated.png', 'DefaultMovies.png')
-            self.addDirectoryItem(32019, 'movies&url=views', 'most-voted.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32018, 'movies&url=popular_new', 'most-popular.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32321, 'movies&url=featured_new', 'featured.png', 'DefaultRecentlyAddedMovies.png')
+            self.addDirectoryItem(32023, 'movies&url=rating_new', 'highly-rated.png', 'DefaultMovies.png')
+            self.addDirectoryItem(32019, 'movies&url=voted_new', 'most-voted.png', 'DefaultMovies.png')
             self.addDirectoryItem(32022, 'movies&url=theaters', 'in-theaters.png', 'DefaultRecentlyAddedMovies.png')
             self.addDirectoryItem(32020, 'movies&url=boxoffice', 'box-office.png', 'DefaultMovies.png')
             self.addDirectoryItem(32580, 'movies&url=added', 'latest-movies.png', 'DefaultRecentlyAddedMovies.png')
@@ -104,7 +104,7 @@ class navigator:
             self.addDirectoryItem(32020, 'movies&url=tmdb_boxoffice', 'box-office.png', 'DefaultMovies.png')
             self.addDirectoryItem(32580, 'movies&url=tmdb_added', 'latest-movies.png', 'DefaultRecentlyAddedMovies.png')
         self.addDirectoryItem(32579, 'movies&url=tmdb_upcoming', 'new-tvshows.png', 'DefaultRecentlyAddedMovies.png')
-        self.addDirectoryItem(32021, 'movies&url=oscars', 'oscar-winners.png', 'DefaultMovies.png')
+        self.addDirectoryItem(32021, 'movies&url=oscars_new', 'oscar-winners.png', 'DefaultMovies.png')
         self.addDirectoryItem(32124, 'movieKeywords', 'imdb.png', 'DefaultMovies.png')
         self.addDirectoryItem('More IMDb Keywords', 'movieKeywords2', 'imdb.png', 'DefaultMovies.png')
         self.addDirectoryItem(32125, 'movieCustomLists', 'imdb.png', 'DefaultMovies.png')
@@ -165,7 +165,6 @@ class navigator:
             self.addDirectoryItem(32018, 'tvshows&url=popular', 'most-popular.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32023, 'tvshows&url=rating', 'highly-rated.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32019, 'tvshows&url=views', 'most-voted.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32024, 'tvshows&url=airing', 'airing-today.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32026, 'tvshows&url=premiere', 'new-tvshows.png', 'DefaultTVShows.png')
         else:
             self.addDirectoryItem(32011, 'tvTmdbGenres&code=', 'genres.png', 'DefaultTVShows.png')
@@ -179,8 +178,8 @@ class navigator:
             self.addDirectoryItem(32018, 'tvshows&url=tmdb_pop', 'most-popular.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32023, 'tvshows&url=tmdb_rating', 'highly-rated.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32019, 'tvshows&url=tmdb_voted', 'most-voted.png', 'DefaultTVShows.png')
-            self.addDirectoryItem(32024, 'tvshows&url=tmdb_airing', 'airing-today.png', 'DefaultTVShows.png')
             self.addDirectoryItem(32026, 'tvshows&url=tmdb_premiere', 'new-tvshows.png', 'DefaultTVShows.png')
+        self.addDirectoryItem(32024, 'tvshows&url=tmdb_airing', 'airing-today.png', 'DefaultTVShows.png')
         self.addDirectoryItem(32025, 'tvshows&url=tmdb_active', 'returning-tvshows.png', 'DefaultTVShows.png')
         self.addDirectoryItem(32006, 'calendar&url=added', 'latest-episodes.png', 'DefaultRecentlyAddedEpisodes.png', queue=True)
         self.addDirectoryItem(32027, 'calendars', 'calendar.png', 'DefaultRecentlyAddedEpisodes.png')
@@ -402,6 +401,7 @@ class navigator:
         # if not yes: return
         from resources.lib.modules import cache
         cache.cache_clear_providers()
+        cache.cache_clear_debrid()
         control.infoDialog(control.lang(32057), sound=True, icon='INFO')
 
     def clearCacheSearch(self, select):
@@ -451,8 +451,9 @@ class navigator:
             return
 
     def addDirectoryItem(self, name, query, thumb, icon, plot='[CR]', context=None, queue=False, isAction=True, isFolder=True):
-        sysaddon = sys.argv[0]
-        syshandle = int(sys.argv[1])
+        from sys import argv
+        sysaddon = argv[0]
+        syshandle = int(argv[1])
         try: name = control.lang(name)
         except: pass
         url = '%s?action=%s' % (sysaddon, query) if isAction == True else query
@@ -474,6 +475,7 @@ class navigator:
         control.addItem(handle=syshandle, url=url, listitem=item, isFolder=isFolder)
 
     def endDirectory(self, cache=True):
-        syshandle = int(sys.argv[1])
+        from sys import argv
+        syshandle = int(argv[1])
         control.content(syshandle, '')
         control.directory(syshandle, cacheToDisc=cache)

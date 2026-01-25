@@ -10,9 +10,12 @@ from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import utils
 from resources.lib.modules import log_utils
+from resources.lib.modules import api_keys
 from resources.lib.indexers import navigator
 
 import os, sys, re
+
+import requests
 
 try: from sqlite3 import dbapi2 as database
 except: from pysqlite2 import dbapi2 as database
@@ -30,20 +33,28 @@ class People:
     def __init__(self):
         self.list = []
 
-        self.items_per_page = str(control.setting('items.per.page')) or '20'
+        self.session = requests.Session()
 
-        self.personlist_link = 'https://www.imdb.com/search/name/?gender=male,female&count=50'
-        self.person_search_link = 'https://www.imdb.com/search/name/?name=%s&count=50'
-        self.person_movie_link = 'https://www.imdb.com/search/title/?title_type=feature,tv_movie&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
-        self.person_tv_link = 'https://www.imdb.com/search/title/?title_type=tv_series,tv_miniseries&release_date=,date[0]&role=%s&sort=year,desc&count=%s' % ('%s', self.items_per_page)
-        self.bio_link = 'https://www.imdb.com/name/%s/bio/'
+        self.items_per_page = str(control.setting('items.per.page')) or '20'
+        self.tm_user = control.setting('tm.user') or api_keys.tmdb_key
+
+        self.personlist_link = 'https://api.themoviedb.org/3/person/popular?api_key=%s&language=en-US&page=1' % self.tm_user
+        self.tm_img_link = 'https://image.tmdb.org/t/p/w%s%s'
+        self.person_search_link = 'https://api.themoviedb.org/3/search/person?query=%s&api_key=%s&page=1' % ('%s', self.tm_user)
+        self.person_movie_link = 'https://api.themoviedb.org/3/person/%s/movie_credits?api_key=%s' % ('%s', self.tm_user)
+        self.person_tv_link = 'https://api.themoviedb.org/3/person/%s/tv_credits?api_key=%s' % ('%s', self.tm_user)
+        self.bio_link = 'https://api.themoviedb.org/3/person/%s?api_key=%s' % ('%s', self.tm_user)
+
+
+    def __del__(self):
+        self.session.close()
 
 
     def persons(self, url=None, content=''):
         if not url:
             url = self.personlist_link
         #log_utils.log(url)
-        self.list = cache.get(self.imdb_person_list, 24, url)
+        self.list = cache.get(self.tmdb_person_list, 24, url)
         self.addDirectory(self.list, content)
         return self.list
 
@@ -122,140 +133,58 @@ class People:
         control.refresh()
 
 
-    def bio_txt(self, url, name):
-        url = self.bio_link % url
-        r = cache.get(client.request, 168, url)
-        r = six.ensure_text(r)
-        r = re.compile('type="application/json">({"props":.+?)</script><script>').findall(r)[0]
-        r = utils.json_loads_as_str(r)['props']['pageProps']['contentData']['entityMetadata']
-        try:
-            born = r['birthDate']['displayableProperty']['value']['plainText']
-        except:
-            born = ''
-        try:
-            if r['deathStatus'] == 'DEAD':
-                died = r['deathDate']['displayableProperty']['value']['plainText']
-            else:
-                died = ''
-        except:
-            died = ''
-        try:
-            bio = r['bio']['text']['plainText']
-        except:
-            bio = ''
+    def bio_txt(self, id, name):
+        url = self.bio_link % id
+        r = self.session.get(url, timeout=16)
+        r.raise_for_status()
+        r.encoding = 'utf-8'
+        r = r.json() if six.PY3 else utils.json_loads_as_str(r.text)
+        #log_utils.log(repr(items))
+        born = r['birthday']
+        died = r['deathday'] or ''
+        bio = r['biography']
 
         txt = '[B]Born:[/B] {0}[CR]{1}[CR]{2}'.format(born or 'N/A', '[B]Died:[/B] {}[CR]'.format(died) if died else '', bio or '[B]Biography:[/B] N/A')
         control.textViewer(text=txt, heading=name, monofont=False)
 
 
-    def imdb_person_list(self, url):
-        result = client.request(url)
-        #log_utils.log(result)
+    def tmdb_person_list(self, url):
 
-        if '__NEXT_DATA__' not in result:
+        result = self.session.get(url, timeout=16)
+        result.raise_for_status()
+        result.encoding = 'utf-8'
+        result = result.json() if six.PY3 else utils.json_loads_as_str(result.text)
+        items = result['results']
+        #log_utils.log(repr(items))
+
+        try:
+            page = int(result['page'])
+            total = int(result['total_pages'])
+            if page >= total: raise Exception()
+            if 'page=' not in url: raise Exception()
+            next = '%s&page=%s' % (url.split('&page=', 1)[0], page+1)
+        except:
+            next = page = ''
+
+        for item in items:
             try:
-                items = client.parseDOM(result, 'div', attrs={'class': '.+?etail'})
+                name = item['name']
+                id = str(item['id'])
+
+                try: poster_path = item['profile_path']
+                except: poster_path = ''
+                if poster_path: image = self.tm_img_link % ('500', poster_path)
+                else: image = '0'
+
+                job = item['known_for_department']
+                known_for = ', '.join([k.get('title', k.get('name')) for k in item['known_for']])
+
+                info = '[I]%s[/I][CR][CR]Known for: [I]%s[/I]' % (job, known_for)
+
+                self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
             except:
-                return
-
-            try:
-                result = result.replace(r'"class=".*?ister-page-nex', '" class="lister-page-nex')
-                next = client.parseDOM(result, 'a', ret='href', attrs={'class': r'.*?ister-page-nex.*?'})
-
-                if len(next) == 0:
-                    next = client.parseDOM(result, 'div', attrs={'class': u'pagination'})[0]
-                    next = zip(client.parseDOM(next, 'a', ret='href'), client.parseDOM(next, 'a'))
-                    next = [i[0] for i in next if 'Next' in i[1]]
-
-                next = url.replace(urllib_parse.urlparse(url).query, urllib_parse.urlparse(next[0]).query)
-                next = client.replaceHTMLCodes(next)
-                next = six.ensure_str(next, errors='ignore')
-            except:
-                next = page = ''
-
-            if next:
-                if '&page=' in url:
-                    page = re.findall('&page=(\d+)', url)[0]
-                else:
-                    page = '1'
-
-            for item in items:
-                try:
-                    name = client.parseDOM(item, 'img', ret='alt')[0]
-                    name = six.ensure_str(name, errors='ignore')
-
-                    id = client.parseDOM(item, 'a', ret='href')[0]
-                    id = re.findall(r'(nm\d*)', id, re.I)[0]
-                    id = client.replaceHTMLCodes(id)
-                    id = six.ensure_str(id, errors='replace')
-
-                    try:
-                        image = client.parseDOM(item, 'img', ret='src')[0]
-                        image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
-                        image = client.replaceHTMLCodes(image)
-                        image = six.ensure_str(image, errors='replace')
-                        if '/sash/' in image or '/nopicture/' in image: raise Exception()
-                    except:
-                        image = 'person.png'
-
-                    try:
-                        info = client.parseDOM(item, 'p')
-                        info = '[I]%s[/I][CR]%s' % (info[0].split('<')[0].strip(), info[1])
-                        info = client.replaceHTMLCodes(info)
-                        info = six.ensure_str(info, errors='ignore')
-                        info = re.sub(r'<.*?>', '', info)
-                    except:
-                        info = ''
-
-                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
-                except:
-                    pass
-
-        else:
-            try:
-                data = re.findall('<script id="__NEXT_DATA__" type="application/json">({.+?})</script>', result)[0]
-                data = utils.json_loads_as_str(data)
-                data = data['props']['pageProps']['searchResults']['nameResults']['nameListItems']
-                items = data[-50:]
-                #log_utils.log(repr(items))
-            except:
-                return
-
-            try:
-                cur = re.findall('&count=(\d+)', url)[0]
-                if int(cur) > len(data):
-                    items = data[-(len(data) - int(cur) + 50):]
-                    raise Exception()
-                next = re.sub('&count=\d+', '&count=%s' % str(int(cur) + 50), url)
-                #log_utils.log('next_url: ' + next)
-                page = int(cur) // 50
-            except:
-                log_utils.log('next_fail', 1)
-                next = page = ''
-
-            for item in items:
-                try:
-                    name = item['nameText']
-                    id = item['nameId']
-                    image = item.get('primaryImage', {}).get('url')
-                    if not image or '/sash/' in image or '/nopicture/' in image: image = 'person.png'
-                    else: image = re.sub(r'(?:_SX|_SY|_UX|_UY|_CR|_AL|_V)(?:\d+|_).+?\.', '_SX500.', image)
-
-                    job = ' / '.join([i for i in item['primaryProfessions']])
-                    known_for = item.get('knownFor', {}).get('originalTitleText') or 'N/A'
-
-                    bio = item['bio']
-                    bio = client.replaceHTMLCodes(bio)
-                    bio = six.ensure_str(bio, errors='ignore')
-                    bio = bio.replace('<br/><br/>', '[CR][CR]')
-                    bio = re.sub(r'<.*?>', '', bio)
-
-                    info = '[I]%s[/I][CR]Known for: [I]%s[/I][CR][CR]%s' % (job, known_for, bio)
-
-                    self.list.append({'name': name, 'id': id, 'image': image, 'plot': info, 'page': page, 'next': next})
-                except:
-                    log_utils.log('person_fail', 1)
-                    pass
+                log_utils.log('person_fail', 1)
+                pass
 
         return self.list
 
@@ -280,12 +209,14 @@ class People:
 
 
     def addDirectory(self, items, content):
-        import sys
-        if items == None or len(items) == 0: return #control.idle() ; sys.exit()
+        from sys import argv
+        if not items:
+            control.idle()
+            control.infoDialog('No content')
 
-        sysaddon = sys.argv[0]
+        sysaddon = argv[0]
 
-        syshandle = int(sys.argv[1])
+        syshandle = int(argv[1])
 
         addonFanart, addonThumb, artPath = control.addonFanart(), control.addonThumb(), control.artPath()
 
@@ -295,6 +226,7 @@ class People:
 
         kodiVersion = control.getKodiVersion()
 
+        list_items = []
         for i in items:
             try:
                 name = i['name']
@@ -333,7 +265,8 @@ class People:
                     vtag.setMediaType('video')
                     vtag.setPlot(plot)
 
-                control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+                #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+                list_items.append((url, item, True))
             except:
                 log_utils.log('people_dir', 1)
                 pass
@@ -353,10 +286,12 @@ class People:
             item.setArt({'icon': icon, 'thumb': icon, 'poster': icon, 'banner': icon, 'fanart': addonFanart})
             item.setProperty('SpecialSort', 'bottom')
 
-            control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+            #control.addItem(handle=syshandle, url=url, listitem=item, isFolder=True)
+            list_items.append((url, item, True))
         except:
             pass
 
+        control.addItems(handle=syshandle, items=list_items, totalItems=len(list_items))
         control.content(syshandle, '')
         control.directory(syshandle, cacheToDisc=True)
 

@@ -6,14 +6,13 @@
 
 
 from resources.lib.modules import control
-from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import utils
 from resources.lib.modules import log_utils
 from resources.lib.modules import api_keys
 from resources.lib.indexers import navigator
 
-import os, sys, re
+import os, sys
 
 import requests
 

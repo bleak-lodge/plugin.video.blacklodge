@@ -290,7 +290,7 @@ class sources:
                     return self.errorForSources()
 
 
-            next = [] ; prev = [] ; total = []
+            nxt = [] ; prev = [] ; total = []
 
             for i in range(1,1000):
                 try:
@@ -299,7 +299,7 @@ class sources:
                     total.append(u)
                     u = dict(urllib_parse.parse_qsl(u.replace('?','')))
                     u = json.loads(u['source'])[0]
-                    next.append(u)
+                    nxt.append(u)
                 except:
                     break
             for i in range(-1000,0)[::-1]:
@@ -314,7 +314,7 @@ class sources:
                     break
 
             items = json.loads(source)
-            items = [i for i in items+next+prev][:40]
+            items = [i for i in items+nxt+prev][:40]
 
             header = control.addonInfo('name') + ': Resolving...'
 
@@ -1295,11 +1295,11 @@ class sources:
             select = control.selectDialog(labels)
             if select == -1: return 'close://'
 
-            next = [y for x,y in enumerate(items) if x >= select]
+            nxt = [y for x,y in enumerate(items) if x >= select]
             prev = [y for x,y in enumerate(items) if x < select][::-1]
 
             items = [items[select]]
-            items = [i for i in items+next+prev][:40]
+            items = [i for i in items+nxt+prev][:40]
 
             header = control.addonInfo('name') + ': Resolving...'
 

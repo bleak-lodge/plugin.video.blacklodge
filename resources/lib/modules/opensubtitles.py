@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-    BlackLodge Add-on
-"""
-
 import os
 from kodi_six import xbmc
 import requests

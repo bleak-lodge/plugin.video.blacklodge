@@ -2,11 +2,10 @@
 
 import requests
 import datetime
-from resources.lib.modules import log_utils
 
 now = datetime.datetime.now()
 
-_GRAPHQL_IMDB_API_URL = 'https://graphql.imdb.com'
+_GRAPHQL_IMDB_API_URL_ = 'https://graphql.imdb.com'
 _GRAPHQL_IMDB_API_URL2 = 'https://graphql.prod.api.imdb.a2z.com/'
 
 headers = {
@@ -46,15 +45,18 @@ def advanced_search(first, after, params):
         keyword = """keywordConstraint: { anyKeywords: ["%s"] }""" % keyword
 
     genre = params.get('genre', '')
-    if genre: genre = ['"'+i+'"' for i in genre.split(',')]
-    excludeGenre = params.get('excludeGenre', '')
-    if excludeGenre: excludeGenre = ['"'+i+'"' for i in excludeGenre.split(',')]
-    if genre or excludeGenre:
-        genre = """genreConstraint: { allGenreIds: [%s], excludeGenreIds: [%s] }""" % (' ,'.join(genre), ' ,'.join(excludeGenre))
+    if genre: genre = ['"'+g+'"' for g in genre.split(',')]
+    excGenre = params.get('excGenre', '')
+    if excGenre: excGenre = ['"'+g+'"' for g in excGenre.split(',')]
+    if genre or excGenre:
+        genre = """genreConstraint: { allGenreIds: [%s], excludeGenreIds: [%s] }""" % (' ,'.join(genre), ' ,'.join(excGenre))
 
     cert = params.get('cert', '')
-    if cert:
-        cert = """certificateConstraint: { anyRegionCertificateRatings: [{ rating: "%s", region: "US" }] }""" % cert
+    if cert: cert = ', '.join(["""{ rating: "%s", region: "US" }""" % c for c in cert.split(',')])
+    excCert = params.get('excCert', '')
+    if excCert: excCert = ', '.join(["""{ rating: "%s", region: "US" }""" % c for c in excCert.split(',')])
+    if cert or excCert:
+        cert = """certificateConstraint: { anyRegionCertificateRatings: [%s], excludeRegionCertificateRatings: [%s] }""" % (cert, excCert)
 
     lang = params.get('lang', '')
     if lang:
@@ -103,6 +105,7 @@ def advanced_search(first, after, params):
                   }
                   plot { plotText { plainText } }
                   primaryImage { url }
+                  certificate { rating }
                   runtime { seconds }
                 }
               }
@@ -120,7 +123,7 @@ def advanced_search(first, after, params):
         'after': after,
         'startDate': startDate,
         'endDate': endDate,
-        'titleType': params.get('titleType', '').split(','),
+        'titleType': params['titleType'].split(','),
         'sort': {'sortBy': sortBy, 'sortOrder': sortOrder}
     }
 
@@ -158,6 +161,7 @@ def more_like_this(first, after, params):
                   }
                   plot { plotText { plainText } }
                   primaryImage { url }
+                  certificate { rating }
                   runtime { seconds }
                 }
               }
@@ -172,7 +176,6 @@ def more_like_this(first, after, params):
 
     request = {'query': query, 'variables': {'imdb': params['imdb'], 'first': first, 'after': after}}
     response = session.post(_GRAPHQL_IMDB_API_URL2, json=request)
-    log_utils.log(repr(response.json()))
     response.raise_for_status()
     return response.json()['data']['title']['moreLikeThisTitles']
 
@@ -203,6 +206,7 @@ def get_customlist(first, after, params):
                   }
                   plot { plotText { plainText } }
                   primaryImage { url }
+                  certificate { rating }
                   runtime { seconds }
                 }
               }

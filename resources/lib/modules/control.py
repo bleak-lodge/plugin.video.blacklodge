@@ -376,8 +376,8 @@ def busy():
 
 
 def idle():
-    execute('Dialog.Close(busydialognocancel)')
-    execute('Dialog.Close(busydialog)')
+    if getKodiVersion() >= 18: return execute('Dialog.Close(busydialognocancel)')
+    else: return execute('Dialog.Close(busydialog)')
 
 
 def queueItem():

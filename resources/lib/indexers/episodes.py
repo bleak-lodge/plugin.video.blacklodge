@@ -314,7 +314,7 @@ class seasons:
                 else:
                     landscape = fanart
 
-                imdb, tvdb, tmdb, year, season = i['imdb'], i.get('tvdb'), i['tmdb'], i['year'], i['season']
+                imdb, tvdb, tmdb, year, season = i.get('imdb', ''), i.get('tvdb', ''), i['tmdb'], i['year'], i['season']
 
                 ep_meta = {'poster': poster, 'fanart': fanart, 'banner': banner, 'clearlogo': i.get('clearlogo', '0'), 'clearart': i.get('clearart', '0'), 'landscape': landscape, 'status': i.get('status', '0'), 'studio': i.get('studio', '0')}
 
@@ -334,7 +334,7 @@ class seasons:
                 except:
                     season_year = year
 
-                meta.update({'mediatype': 'season', 'title': label, 'imdbnumber': imdb, 'code': tmdb, 'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
+                meta.update({'mediatype': 'season', 'season': season, 'title': label, 'tvshowtitle': i['tvshowtitle'], 'imdbnumber': imdb, 'code': tmdb, 'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
 
                 try:
                     season_indicators = [i for i in indicators[0][2] if i[0] == int(season)]
@@ -1211,7 +1211,7 @@ class episodes:
                 for i in items:
                     try:
                         i.pop('page', None) ; i.pop('next', None)
-                        i.update({'duration': str(int(i['duration']) // 60)})
+                        i.update({'duration': str(int(i['duration']) // 60), 'local': True})
                         if not 'tvshowtitle' in i: i['tvshowtitle'] = i['title']
                         if not 'rating' in i or not 'votes' in i: i['rating'] = i['votes'] = '0'
                         self.list.append(i)
@@ -1363,8 +1363,6 @@ class episodes:
                     title = item.get('name')
                     if not title: title = 'Episode %s' % episode
 
-                    label = title
-
                     premiered = item.get('air_date')
                     if not premiered: premiered = '0'
 
@@ -1428,7 +1426,7 @@ class episodes:
                         pass
                     if not castwiththumb: castwiththumb = '0'
 
-                    self.list.append({'title': title, 'label': label, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered,
+                    self.list.append({'title': title, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered,
                                       'rating': rating, 'votes': votes, 'director': director, 'writer': writer, 'castwiththumb': castwiththumb, 'duration': duration, 'studio': studio,
                                       'status': status, 'plot': episodeplot, 'imdb': imdb, 'imdbnumber': imdb, 'tmdb': tmdb, 'tvdb': '0', 'unaired': unaired, 'thumb': thumb,
                                       'poster': poster, 'fanart': fanart, 'banner': banner,'clearlogo': clearlogo, 'clearart': clearart, 'landscape': landscape, 'mediatype': 'episode'})
@@ -1497,13 +1495,11 @@ class episodes:
         list_items = []
         for i in items:
             try:
-                if not 'label' in i: i['label'] = i['title']
-
-                if i['label'] == '0':
+                if i['title'] == '0':
                     label = '%sx%02d . %s %s' % (i['season'], int(i['episode']), 'Episode', i['episode'])
                 else:
-                    label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['label'])
-                if multi == True:
+                    label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['title'])
+                if multi == True or 'local' in i:
                     label = '%s - %s' % (i['tvshowtitle'], label)
 
                 try:
@@ -1512,7 +1508,7 @@ class episodes:
                 except:
                     pass
 
-                imdb, tvdb, tmdb, year, season, episode = i['imdb'], i.get('tvdb'), i['tmdb'], i['year'], i['season'], i['episode']
+                imdb, tvdb, tmdb, year, season, episode = i.get('imdb', ''), i.get('tvdb', ''), i['tmdb'], i['year'], i['season'], i['episode']
 
                 poster = i['poster'] if 'poster' in i and not i['poster'] == '0' else addonPoster
                 fanart = i['fanart'] if 'fanart' in i and not i['fanart'] == '0' else addonFanart
@@ -1542,7 +1538,7 @@ class episodes:
                     episode_year = year
                 offset = bookmarks.get('episode', imdb, season, episode, True)
 
-                meta.update({'mediatype': 'episode', 'title': i['label'], 'offset': offset, 'imdbnumber': imdb, 'code': tmdb,
+                meta.update({'mediatype': 'episode', 'season': season, 'offset': offset, 'imdbnumber': imdb, 'code': tmdb,
                              'poster': poster, 'fanart': fanart, 'banner': banner, 'landscape': landscape})
 
                 sysmeta = urllib_parse.quote_plus(json.dumps(meta))

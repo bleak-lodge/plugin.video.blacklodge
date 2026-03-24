@@ -118,7 +118,7 @@ class navigator:
             self.addDirectoryItem(32036, 'movies&url=local_history', 'iconT.png', 'DefaultMovies.png', queue=True)
             self.addDirectoryItem(32527, 'movies&url=local_list', 'iconT.png', 'DefaultMovies.png', queue=True)
 
-        self.endDirectory()
+        self.endDirectory(cache=False)
 
 
     def tvshows(self):
@@ -189,7 +189,7 @@ class navigator:
             self.addDirectoryItem(32036, 'calendar&url=local_history', 'iconT.png', 'DefaultTVShows.png', queue=True)
             self.addDirectoryItem(32527, 'tvshows&url=local_list', 'iconT.png', 'DefaultTVShows.png')
 
-        self.endDirectory()
+        self.endDirectory(cache=False)
 
 
     def tools(self):
@@ -394,7 +394,7 @@ class navigator:
         log_utils.empty_log()
 
     def dev_menu(self):
-        c = control.getKeyboard(heading='PIN code required to enter Dev menu')
+        c = control.inputDialog(heading='PIN code required to enter Dev menu')
         if c == api_keys.pin:
             if not hasScraper:
                 self.addDirectoryItem('Install external scraper package', 'installAddon&addon_id=script.module.blackscrapers', 'iconT.png', 'DefaultAddonProgram.png', isFolder=False)
